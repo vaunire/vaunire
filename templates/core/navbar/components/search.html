@@ -1,0 +1,57 @@
+<!-- Поиск -->
+<form action="{% url 'search' %}" method="get" 
+      class="flex w-full max-w-[350px] relative -ml-4" 
+      x-data="{ isOpen: false, hasResults: false }"
+      @click.outside="isOpen = false">
+
+    <input
+        x-ref="searchInput"
+        type="text"
+        name="q"
+        placeholder="Поиск"
+        autocomplete="off"
+        class="w-full pl-3.5 pr-12 py-1 text-[13px] shadow-sm font-normal text-black bg-white border border-gray-200/70 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all duration-300 placeholder-gray-400"
+        hx-get="{% url 'search' %}"
+        hx-trigger="keyup changed delay:500ms"
+        hx-target="#search-results"
+        hx-swap="innerHTML"
+        @focus="isOpen = true; hasResults = $refs.searchInput.value.length > 0"
+        @input="isOpen = true; hasResults = $refs.searchInput.value.length > 0"
+        @htmx:afterRequest="hasResults = $refs.searchInput.value.length > 0">
+
+    <!-- Кнопка лупы -->
+    <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 transition-colors duration-300">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+    </button>
+
+    <!-- Кнопка очистки -->
+    <button type="button"
+            class="absolute right-9 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors duration-300"
+            @click="$refs.searchInput.value = ''; isOpen = false; hasResults = false; $refs.searchInput.focus(); htmx.ajax('GET', '{% url 'search' %}?q=', {target: '#search-results', swap: 'innerHTML'})"
+            x-show="$refs.searchInput.value.length > 0"
+            style="display: none;">
+        <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+
+    <!-- Выпадающий список результатов -->
+    <div id="search-results"
+         class="absolute top-full mt-2 w-full bg-white border border-gray-200 shadow-xl rounded-lg z-50 max-h-[400px] overflow-y-auto custom-scrollbar"
+         x-show="isOpen && hasResults"
+         x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-2">
+         
+         <!-- Индикатор загрузки HTMX -->
+         <div class="htmx-indicator p-4 text-center text-xs text-gray-400">
+             Загрузка...
+         </div>
+    </div>
+</form>

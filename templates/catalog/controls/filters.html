@@ -1,0 +1,259 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/filters.css' %}">
+
+<div class="flex flex-col w-full ml-1 mt-2 mb-3"
+     x-data="catalogFilters({
+        mediaType: '{{ selected_media_type|default:'all' }}',
+        minPrice: {{ filters.min_price|default:defaults.min_price }},
+        maxPrice: {{ filters.max_price|default:defaults.max_price }},
+        minLimit: {{ defaults.min_price }},
+        maxLimit: {{ defaults.max_price }},
+        minYear: {{ filters.min_year|default:defaults.min_year }},
+        maxYear: {{ filters.max_year|default:defaults.max_year }},
+        minYearLimit: {{ defaults.min_year }},
+        maxYearLimit: {{ defaults.max_year }}
+     })"
+     x-init="updatePriceBar(); updateYearBar();"
+     @reset-filters.window="resetAll()">
+
+    <!-- 1. КАТЕГОРИИ -->
+    <div class="mb-3 pl-2 flex flex-col gap-1">
+        <a href="#" @click.prevent="setMedia('all')" class="group text-[13px] flex items-center transition-colors duration-200" :class="mediaType === 'all' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'">
+        <svg width="16px" height="16px" class="mr-1 transition-colors duration-200" :class="mediaType === 'all' ? 'text-blue-600' : 'text-gray-400/80 group-hover:text-blue-600'" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M18.5149 1.12128C19.7772 0.805704 21 1.76042 21 3.06156V5.93846C21 6.85619 20.3754 7.65616 19.4851 7.87874L13 9.50001V18C13 20.7614 10.7614 23 8 23C5.23858 23 3 20.7614 3 18C3 15.2386 5.23858 13 8 13C9.12561 13 10.1643 13.372 11 13.9996V4.56156C11 3.64383 11.6246 2.84386 12.5149 2.62128L18.5149 1.12128ZM17.7575 3.31064C18.3886 3.15286 19 3.63022 19 4.28079V5.21923C19 5.6781 18.6877 6.07808 18.2425 6.18938L14.2425 7.18938C13.6114 7.34716 13 6.8698 13 6.21923V5.28079C13 4.82192 13.3123 4.42194 13.7575 4.31064L17.7575 3.31064ZM5.00786 18C5.00786 19.6525 6.34749 20.9921 8 20.9921C9.65251 20.9921 10.9921 19.6525 10.9921 18C10.9921 16.3475 9.65251 15.0079 8 15.0079C6.34749 15.0079 5.00786 16.3475 5.00786 18Z"/>
+        </svg>
+            Музыка
+        </a>
+        <a href="#" @click.prevent="setMedia('2')" class="text-[13px] ml-9 transition-colors duration-200 flex items-center" :class="mediaType === '2' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'">Виниловые пластинки</a>
+        <a href="#" @click.prevent="setMedia('1')" class="text-[13px] ml-9 transition-colors duration-200 flex items-center" :class="mediaType === '1' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'">CD диски</a>
+    </div>
+
+    <!-- 2. ПАНЕЛЬ ФИЛЬТРОВ -->
+    <div class="filter-container bg-white p-6 rounded-xl shadow-sm border border-gray-200 overflow-y-auto">
+        
+        <form method="GET" action="{% url 'base' %}" id="filter-form" 
+              hx-get="{% url 'base' %}" 
+              hx-target="#catalog-content" 
+              hx-trigger="change delay:500ms" 
+              hx-indicator="#loading-indicator" 
+              hx-push-url="true">
+            
+            <input type="hidden" name="media_type" x-model="mediaType">
+            <input type="hidden" name="sort" value="{{ sort|default:'' }}">
+            <input type="hidden" name="per_page" value="{{ per_page|default:'8' }}">
+            <input type="hidden" name="view" value="{{ view_type|default:'grid' }}">
+            
+            <!-- ЦЕНА -->
+            <div class="mb-4">
+                <h4 class="text-[13px] mb-3 font-normal text-black">Цена</h4>
+                
+                <div class="slider-container mb-4">
+                    <!-- Серая подложка -->
+                    <div class="absolute top-1/2 left-0 right-0 h-1.5 bg-gray-200 rounded-full transform -translate-y-1/2 z-0"></div>
+                    <!-- Синяя активная полоса (управляется JS) -->
+                    <div class="absolute top-1/2 h-1.5 bg-blue-500 rounded-full transform -translate-y-1/2 z-1 pointer-events-none"
+                         :style="`left: ${pricePercent.min}%; right: ${pricePercent.max}%;`"></div>
+                    
+                    <!-- Ползунки (Используем ваши стили input[type=range]) -->
+                    <input type="range" min="{{ defaults.min_price }}" max="{{ defaults.max_price }}" 
+                           x-model.number="minPrice" 
+                           @input="checkPriceGap(); updatePriceBar()">
+                           
+                    <input type="range" min="{{ defaults.min_price }}" max="{{ defaults.max_price }}" 
+                           x-model.number="maxPrice" 
+                           @input="checkPriceGap(); updatePriceBar()">
+                </div>
+
+                <div class="flex items-center justify-between gap-2">
+                    <input type="number" name="min_price" x-model.number="minPrice" @change="checkPriceGap(); updatePriceBar()" class="w-[85px] p-2 pl-3 text-left border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+                    <div class="w-4 h-px bg-gray-300"></div>
+                    <input type="number" name="max_price" x-model.number="maxPrice" @change="checkPriceGap(); updatePriceBar()" class="w-[85px] p-2 pl-3 text-left border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+                </div>
+            </div>
+
+            <!-- НАЛИЧИЕ (Ваши стили switch) -->
+            <div class="mb-4">
+                <h4 class="text-[13px] mb-2 font-normal text-black">Наличие</h4>
+                <label class="flex items-center cursor-pointer group">
+                    <span class="switch-container">
+                        <input type="checkbox" name="in_stock" value="1" {% if in_stock %}checked{% endif %} class="switch-checkbox">
+                        <span class="switch-slider"></span>
+                    </span>
+                    <span class="ml-2.5 text-[13px] text-gray-600 group-hover:text-blue-600 transition-colors">Только в наличии</span>
+                </label>
+            </div>
+
+            <!-- ЖАНРЫ (Логика Alpine) -->
+            <div class="mb-3" x-data="{ showAll: false }">
+                <h4 class="text-[13px] mb-2 font-normal text-black">Жанры</h4>
+                <div class="flex flex-col gap-2">
+                    {% for genre in genres %}
+                        <label class="flex items-center group cursor-pointer"
+                               {% if forloop.counter > 3 %}x-show="showAll" x-cloak{% endif %}>
+                            <input type="checkbox" name="genres" value="{{ genre.id }}" 
+                                   class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer" 
+                                   {% if genre.id|stringformat:"s" in selected_genres %}checked{% endif %}>
+                            <span class="ml-2 text-[13px] text-gray-600 group-hover:text-blue-600 transition-colors">{{ genre.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% if genres|length > 3 %}
+                    <button type="button" @click="showAll = !showAll" 
+                            class="mt-2 text-[13px] font-normal text-blue-600 hover:text-blue-800 focus:outline-none"
+                            x-text="showAll ? 'Скрыть' : 'Посмотреть все'">
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- СТИЛИ -->
+            <div class="mb-3" x-data="{ showAll: false }">
+                <h4 class="text-[13px] mb-2 font-normal text-black">Стили</h4>
+                <div class="flex flex-col gap-2">
+                    {% for style in styles %}
+                        <label class="flex items-center group cursor-pointer"
+                               {% if forloop.counter > 3 %}x-show="showAll" x-cloak{% endif %}>
+                            <input type="checkbox" name="styles" value="{{ style.id }}" 
+                                   class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer" 
+                                   {% if style.id|stringformat:"s" in selected_styles %}checked{% endif %}>
+                            <span class="ml-2 text-[13px] text-gray-600 group-hover:text-blue-600 transition-colors">{{ style.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% if styles|length > 3 %}
+                    <button type="button" @click="showAll = !showAll" 
+                            class="mt-2 text-[13px] font-normal text-blue-600 hover:text-blue-800 focus:outline-none"
+                            x-text="showAll ? 'Скрыть' : 'Посмотреть все'">
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- ГОД ВЫПУСКА -->
+            <div class="mb-3.5">
+                <h4 class="text-[13px] mb-2.5 font-normal text-black">Год выпуска</h4>
+                
+                <div class="slider-container mb-4">
+                    <div class="absolute top-1/2 left-0 right-0 h-1.5 bg-gray-200 rounded-full transform -translate-y-1/2 z-0"></div>
+                    <div class="absolute top-1/2 h-1.5 bg-blue-500 rounded-full transform -translate-y-1/2 z-1 pointer-events-none"
+                         :style="`left: ${yearPercent.min}%; right: ${yearPercent.max}%;`"></div>
+                    
+                    <input type="range" min="{{ defaults.min_year }}" max="{{ defaults.max_year }}" 
+                           x-model.number="minYear" 
+                           @input="checkYearGap(); updateYearBar()">
+                           
+                    <input type="range" min="{{ defaults.min_year }}" max="{{ defaults.max_year }}" 
+                           x-model.number="maxYear" 
+                           @input="checkYearGap(); updateYearBar()">
+                </div>
+
+                <div class="flex items-center justify-between gap-2">
+                    <input type="number" name="min_year" x-model.number="minYear" @change="checkYearGap(); updateYearBar()" class="w-[85px] p-2 pl-3 text-left border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+                    <div class="w-4 h-px bg-gray-300"></div>
+                    <input type="number" name="max_year" x-model.number="maxYear" @change="checkYearGap(); updateYearBar()" class="w-[85px] p-2 pl-3 text-left border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+                </div>
+            </div>
+
+            <!-- АКЦИИ (Ваши стили switch) -->
+            <div class="mb-1">
+                <h4 class="text-[13px] mb-2.5 font-normal text-black">Акции</h4>
+                <label class="flex items-center cursor-pointer group">
+                    <span class="switch-container">
+                        <input type="checkbox" name="offer_of_the_week" value="1" {% if offer_of_the_week %}checked{% endif %} class="switch-checkbox">
+                        <span class="switch-slider"></span>
+                    </span>
+                    <span class="ml-2.5 text-[13px] text-gray-600 group-hover:text-blue-600 transition-colors whitespace-nowrap">Предложение недели</span>
+                </label>
+            </div>
+        </form>
+    </div>
+
+    <!-- 3. Кнопка сброса -->
+    <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-50 mt-3">
+        <button type="button" 
+                @click="resetAll()" 
+                class="w-full px-4 py-2 bg-white text-gray-600 text-center rounded-md border border-gray-300 hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:shadow-inner group">
+            <svg class="text-gray-400 group-hover:text-blue-500 transition-colors" xmlns="http://www.w3.org/2000/svg" width="16.5" height="16.5" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M2.39 1.73L1.11 3L9 10.89v4.98c-.04.29.06.6.29.83l4.01 4.01c.39.39 1.02.39 1.41 0c.23-.21.33-.53.29-.83v-2.99l5.84 5.84l1.27-1.27L15 14.35v-.01l-2-1.99l-2-2.01L4.15 3.5zM6.21 3L8.2 5h8.76l-3.85 4.91L15 11.8v-1.05l4.79-6.13a1 1 0 0 0-.17-1.4c-.19-.14-.4-.22-.62-.22zM11 12.89l2 2v2.69l-2-2z"/>
+            </svg>
+            <span class="text-[13px] font-normal tracking-wide group-hover:text-gray-800 transition-colors">Сбросить фильтры</span>
+        </button>
+    </div>
+</div>
+
+<!-- Alpine Logic -->
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('catalogFilters', (config) => ({
+            mediaType: config.mediaType,
+            minPrice: config.minPrice,
+            maxPrice: config.maxPrice,
+            minYear: config.minYear,
+            maxYear: config.maxYear,
+            
+            limits: {
+                priceMin: config.minLimit,
+                priceMax: config.maxLimit,
+                yearMin: config.minYearLimit,
+                yearMax: config.maxYearLimit
+            },
+
+            pricePercent: { min: 0, max: 0 },
+            yearPercent: { min: 0, max: 0 },
+
+            setMedia(val) {
+                this.mediaType = val;
+                this.$nextTick(() => {
+                    htmx.trigger(document.getElementById('filter-form'), 'change');
+                });
+            },
+
+            checkPriceGap() {
+                if (this.minPrice > this.maxPrice - 100) {
+                    if (this.$event && this.$event.target.name === 'min_price') {
+                        this.minPrice = this.maxPrice - 100;
+                    } else {
+                        this.maxPrice = this.minPrice + 100;
+                    }
+                }
+            },
+
+            updatePriceBar() {
+                this.pricePercent.min = ((this.minPrice - this.limits.priceMin) / (this.limits.priceMax - this.limits.priceMin)) * 100;
+                this.pricePercent.max = 100 - ((this.maxPrice - this.limits.priceMin) / (this.limits.priceMax - this.limits.priceMin)) * 100;
+            },
+
+            checkYearGap() {
+                if (this.minYear > this.maxYear - 1) {
+                    if (this.$event && this.$event.target.name === 'min_year') {
+                        this.minYear = this.maxYear - 1;
+                    } else {
+                        this.maxYear = this.minYear + 1;
+                    }
+                }
+            },
+
+            updateYearBar() {
+                this.yearPercent.min = ((this.minYear - this.limits.yearMin) / (this.limits.yearMax - this.limits.yearMin)) * 100;
+                this.yearPercent.max = 100 - ((this.maxYear - this.limits.yearMin) / (this.limits.yearMax - this.limits.yearMin)) * 100;
+            },
+
+            resetAll() {
+                this.mediaType = 'all';
+                this.minPrice = this.limits.priceMin;
+                this.maxPrice = this.limits.priceMax;
+                this.minYear = this.limits.yearMin;
+                this.maxYear = this.limits.yearMax;
+                
+                this.updatePriceBar();
+                this.updateYearBar();
+
+                const form = document.getElementById('filter-form');
+                form.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+
+                this.$nextTick(() => {
+                    htmx.trigger(form, 'change');
+                });
+            }
+        }));
+    });
+</script>

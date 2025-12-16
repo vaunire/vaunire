@@ -1,0 +1,23 @@
+<div>
+    {% if cart.products.exists %}
+        <div class="flex flex-col lg:flex-row gap-7 flex-grow">
+            <div class="flex-1 space-y-4">
+            
+                <div class="flex items-center tracking-wide font-montserrat justify-between -mb-2 mt-1">
+                    <h3 class="text-lg font-bold text-black relative inline-block">Товары в корзине</h3>
+                </div>
+
+                <!-- Список товаров -->
+                {% include 'cart/components/items.html' %}
+
+                <!-- Оформление заказа -->
+                {% include 'cart/components/checkout.html' %}
+            </div>
+
+            <!-- Боковая панель -->
+            {% include 'cart/components/summary.html' %}
+        </div>
+    {% else %}
+        {% include 'cart/states/empty_state.html' %}
+    {% endif %}
+</div>

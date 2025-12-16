@@ -1,0 +1,54 @@
+{% load humanize %}
+<div id="sideDrawerBackdrop" onclick="closeDrawer()" class="fixed inset-0 bg-black/50 z-[999] hidden transition-opacity duration-300 opacity-0"></div>
+<div id="sideDrawer" class="fixed top-0 right-0 h-full w-full md:w-[750px] bg-white z-[1000] shadow-2xl font-montserrat tracking-wide transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    
+    <!-- Шапка Drawer -->
+    <div class="p-8 flex justify-between items-center bg-white flex-none">
+        <h3 class="text-xl font-bold text-black">Подробнее о товаре</h3>
+        <button onclick="closeDrawer()" class="text-gray-400 hover:text-black transition-colors p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+
+    <!-- Контент -->
+    <div class="p-8 -mt-12 overflow-y-auto flex-1 font-montserrat tracking-wide">
+        <!-- Описание -->
+        <h4 class="text-lg font-semibold text-black mb-2.5">Описание</h4>
+        <div class="mb-8 text-sm leading-7 text-black">
+            {{ album.description|default:"Описание отсутствует"|safe }}
+        </div>
+
+        <!-- Треклист -->
+        {% if album.tracklist %}
+        <h4 class="text-lg -mt-10 font-semibold text-black mb-2">Треклист</h4>
+        <div class="text-sm leading-7 text-black">
+            {{ album.tracklist|safe }}
+        </div>
+        {% endif %}
+
+        <div>
+        {% include 'album/components/characteristics.html' %}
+        </div>
+
+        <div class="border-gray-100">
+             {% include 'album/components/delivery_payment.html' %}
+        </div>
+    </div>
+
+    <!-- Футер ( -->
+    <div class="px-8 py-3.5 border-t border-gray-200 bg-white flex-none sticky bottom-0">
+    <div class="flex justify-between items-center gap-4"> 
+        <div class="flex flex-col">
+            {% if album.active_promotion %}
+                <span class="text-2xl font-semibold text-black">{{ album.discounted_price|floatformat:0|intcomma }} ₽</span>
+                <span class="text-base text-gray-300 line-through">{{ album.current_price|floatformat:0|intcomma }} ₽</span>
+            {% else %}
+                <span class="text-2xl font-semibold text-black">{{ album.current_price|floatformat:0|intcomma }} ₽</span>
+            {% endif %}
+        </div>
+
+        <!-- Кнопки -->
+        <div class="flex-1 h-11">
+             {% include 'album/controls/drawer_actions.html' %}
+        </div>
+    </div>
+</div>
+</div>

@@ -1,0 +1,27 @@
+<!-- Кнопка каталога с dropdown -->
+<div class="relative" x-data="{ isOpen: false }">
+    <button type="button" class="p-2 text-gray-600 hover:text-blue-600 transition-colors duration-300" @click="isOpen = !isOpen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 16 16" class="text-gray-500">
+            <path fill="currentColor" fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+        </svg>
+    </button>
+
+    <!-- Dropdown меню -->
+    <div class="absolute left-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md z-50"
+         x-show="isOpen"
+         x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         @click.away="isOpen = false">
+        <ul class="py-1">
+            <li><a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-300">Все товары</a></li>
+            <li><a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-300">Новинки</a></li>
+            <li><a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-300">Популярное</a></li>
+            <li><a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-300">Скидки</a></li>
+        </ul>
+    </div>
+</div>

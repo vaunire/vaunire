@@ -1,0 +1,24 @@
+<div class="pt-8 w-full max-w-[570px]">
+    <div class="flex space-x-8 border-b border-gray-200 mb-4">
+        <button onclick="switchTab('description')" id="tab-btn-description" class="pb-2 text-sm font-semibold uppercase tracking-wider border-b-2 border-gray-900 text-gray-900">Описание</button>
+        {% if album.tracklist %}
+        <button onclick="switchTab('tracklist')" id="tab-btn-tracklist" class="pb-2 text-sm font-semibold uppercase tracking-wider border-b-2 border-transparent text-gray-400 hover:text-gray-600">Треклист</button>
+        {% endif %}
+    </div>
+
+    <div class="relative">
+        <div id="tab-content-description" class="tab-content text-gray-600 font-normal text-sm leading-7 line-clamp-4">
+            {{ album.description|default:"Описание готовится..."|safe }}
+        </div>
+        {% if album.tracklist %}
+        <div id="tab-content-tracklist" class="tab-content hidden text-gray-600 text-sm leading-7 line-clamp-4">
+            {{ album.tracklist|safe }}
+        </div>
+        {% endif %}
+        
+        <button onclick="openDrawer()" class="mt-2 text-blue-600 font-medium text-sm hover:underline flex items-center gap-1.5">
+            Показать полностью
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+    </div>
+</div>

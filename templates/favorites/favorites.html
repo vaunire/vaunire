@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<main class="flex-grow mb-20">
+    <div class="container mx-auto max-w-[1340px] px-5 py-3">
+        <div class="flex-1">
+            <form id="filter-form" 
+                  hx-get="." 
+                  hx-trigger="change" 
+                  hx-target="#favorites-grid"
+                  class="hidden">
+                <input type="hidden" name="sort" id="sort_input" value="{{ filters.sort }}">
+                <input type="hidden" name="in_stock" id="in_stock_input" value="{% if filters.in_stock %}1{% endif %}">
+            </form>
+
+            <!-- Шапка: Заголовок и Управление -->
+            <div class="mb-5 flex items-start justify-between">
+                
+                <!-- Заголовок с декоративным счетчиком -->
+                <div class="relative inline-block">
+                    <h1 class="text-2xl font-semibold text-black relative z-10">
+                        Избранные товары
+                    </h1>
+                    {% if page_obj.paginator.count > 0 %}
+                        <span id="fav-counter" class="absolute -top-0.5 -right-2.5 font-geologica text-3xl text-blue-600 opacity-25 font-bold tracking-wide">
+                            {{ page_obj.paginator.count }}
+                        </span>
+                    {% else %}
+                        <span id="fav-counter"></span>
+                    {% endif %}
+                </div>
+                
+                <!-- Панель управления -->
+                <div class="flex items-center gap-3">
+                    
+                    <!-- Выпадающий список сортировки -->
+                    {% include 'catalog/controls/sorting.html' %}
+
+                    <!-- Переключатель "Только в наличии" -->
+                    <label class="inline-flex items-center cursor-pointer select-none group bg-white rounded-lg px-4 py-[7px] shadow-sm transition-all duration-200 hover:bg-gray-50">
+                        <input type="checkbox" value="1" class="sr-only peer" 
+                               {% if filters.in_stock %}checked{% endif %}
+                               onchange="document.getElementById('in_stock_input').value = this.checked ? '1' : ''; htmx.trigger(document.getElementById('filter-form'), 'change');">
+                        <div class="relative w-9 h-5 bg-gray-200 rounded-full peer peer-focus:outline-none transition-colors duration-200 
+                                    peer-checked:bg-blue-600 group-hover:bg-gray-300 peer-checked:group-hover:bg-blue-700
+                                    after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white 
+                                    after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all 
+                                    peer-checked:after:translate-x-full peer-checked:after:border-white">
+                        </div>
+                        <span class="ml-2.5 text-[13px] -mt-0.5 font-normal text-black">Только в наличии</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Сетка товаров -->
+            <div id="favorites-grid">
+                {% include 'favorites/components/content.html' %}
+            </div>
+            
+        </div>
+    </div>
+</main>
+{% endblock content %}

@@ -1,0 +1,35 @@
+{% load static tailwind_tags %}
+
+<div class="navbar fixed top-0 left-0 right-0 z-50">
+    <nav class="bg-white shadow-md rounded-b-2xl px-8 py-4 flex items-center max-w-[1300px] mx-auto w-full">
+        <!-- Лого -->
+        <div class="flex items-center gap-4 flex-shrink-0">
+            <a href="/">
+                <img src="{% static 'images/logo/logo_black.png' %}" alt="vaunire_logo" class="h-10 w-auto">
+            </a>
+        </div>
+
+        <!-- Центральная часть: Каталог и поиск -->
+        <div class="flex items-center gap-6 flex-1 justify-start ml-6">
+            {% include 'core/navbar/components/catalog.html' %}
+            {% include 'core/navbar/components/search.html' %}
+        </div>
+   
+        <!-- Правая часть: Действия пользователя -->
+        <div class="flex items-center ml-auto">
+            {% if request.user.is_authenticated %}
+                <!-- Уведомления -->
+                {% include 'core/navbar/components/notifications.html' %}
+
+                <!-- Корзина -->
+                {% include 'core/navbar/components/cart.html' %}
+
+                <!-- Избранное -->
+                {% include 'core/navbar/components/favorites.html' %}
+            {% endif %}
+
+            <!-- Профиль / Dropdown -->
+            {% include 'core/navbar/components/profile.html' %}
+        </div>
+    </nav>
+</div>

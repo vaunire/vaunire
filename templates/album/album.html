@@ -1,0 +1,173 @@
+{% extends 'core/base.html' %}
+{% load humanize static %}
+
+{% block content %}
+<div class="max-w-[1320px] font-montserrat tracking-wide mx-auto mt-6 mb-8 relative">
+    
+    <!-- Хлебные крошки -->
+    {% include 'album/components/breadcrumbs.html' %}
+
+    <!-- Основной Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 px-4 lg:px-8 mt-4">
+        
+        <!-- ЛЕВАЯ ЧАСТЬ -->
+        <div class="lg:col-span-6 flex flex-col items-center lg:items-start">
+            <!-- Галерея -->
+            {% include 'album/components/gallery.html' %}
+            
+            <!-- Табы (Описание и Треклист) -->
+            {% include 'album/components/tabs.html' %}
+        </div> 
+
+        <!-- ПРАВАЯ ЧАСТЬ -->
+        <div class="lg:col-span-6 relative flex flex-col pl-4">
+            <!-- Информация о продукте -->
+            {% include 'album/components/product_info.html' %}
+
+            <!-- Характеристики -->
+            {% include 'album/components/characteristics.html' %}
+            
+            <!-- Кнопки действия (Корзина / Вишлист) -->
+            {% include 'album/controls/actions.html' %}
+
+            <!-- Доставка и Оплата -->
+            {% include 'album/components/delivery_payment.html' %}
+        </div>
+
+    </div>
+</div>
+
+<!-- БЛОК: Ваши находки-->
+{% include 'album/components/findings.html' %}
+
+<script>
+    // Кастомная функция для плавного скролла
+    function smoothScrollTo(element, target, duration) {
+        const start = element.scrollLeft;
+        const change = target - start;
+        const startTime = performance.now();
+
+        function animateScroll(currentTime) {
+            const timeElapsed = currentTime - startTime;
+            if (timeElapsed < duration) {
+                // Easing function: easeInOutQuad
+                let progress = timeElapsed / duration;
+                if (progress < 0.5) {
+                    progress = 2 * progress * progress;
+                } else {
+                    progress = -1 + (4 - 2 * progress) * progress;
+                }
+                
+                element.scrollLeft = start + change * progress;
+                requestAnimationFrame(animateScroll);
+            } else {
+                element.scrollLeft = target;
+            }
+        }
+
+        requestAnimationFrame(animateScroll);
+    }
+
+    // Cache wrapper width to avoid layout thrashing
+    const rvContainer = document.getElementById('recentlyViewedContainer');
+    let rvContainerWidth = rvContainer ? rvContainer.clientWidth : 0;
+
+    window.addEventListener('resize', () => {
+        if (rvContainer) {
+            rvContainerWidth = rvContainer.clientWidth;
+        }
+    });
+
+    function scrollRecentlyViewed(direction) {
+        const container = document.getElementById('recentlyViewedContainer');
+        if (!container) return;
+
+        // Use cached width
+        const scrollAmount = rvContainerWidth; 
+        const maxScroll = container.scrollWidth - rvContainerWidth;
+        let targetScroll;
+
+        if (direction === 'left') {
+            targetScroll = Math.max(0, container.scrollLeft - scrollAmount);
+        } else {
+            targetScroll = Math.min(maxScroll, container.scrollLeft + scrollAmount);
+        }
+
+        // Запускаем кастомный скролл (800мс для максимальной плавности)
+        smoothScrollTo(container, targetScroll, 800);
+    }
+
+    // Логика обновления точек при скролле (Optimized)
+    const rvDots = document.getElementById('rvDots');
+    
+    if (rvContainer && rvDots) {
+        let isTicking = false;
+
+        rvContainer.addEventListener('scroll', () => {
+            if (!isTicking) {
+                window.requestAnimationFrame(() => {
+                    const scrollLeft = rvContainer.scrollLeft;
+                    // Use cached width
+                    const pageIndex = Math.round(scrollLeft / rvContainerWidth);
+                    
+                    Array.from(rvDots.children).forEach((dot, index) => {
+                        if (index === pageIndex) {
+                            dot.classList.remove('bg-gray-300');
+                            dot.classList.add('bg-black');
+                        } else {
+                            dot.classList.remove('bg-black');
+                            dot.classList.add('bg-gray-300');
+                        }
+                    });
+                    isTicking = false;
+                });
+                isTicking = true;
+            }
+        });
+    }
+</script>
+
+<!-- Модальное окно -->
+{% include 'album/modals/drawer.html' %}
+
+<style>
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
+<!-- Скрипты -->
+<script>
+    // Галерея
+    const totalSlides = 1 + {{ album.image_gallery.all|length }};
+    let currentIndex = 0;
+    function updateSlider() {
+        const track = document.getElementById('sliderTrack');
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        document.querySelectorAll('.thumbnail-item').forEach((thumb, index) => {
+            if(index === currentIndex) {
+                thumb.classList.remove('opacity-50'); thumb.classList.add('opacity-100', 'border-blue-500'); 
+                thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            } else { thumb.classList.add('opacity-50'); thumb.classList.remove('opacity-100', 'border-blue-500'); }
+        });
+    }
+    function selectImage(index) { currentIndex = index; updateSlider(); }
+    function nextImage() { if (currentIndex < totalSlides - 1) { currentIndex++; updateSlider(); } }
+    function prevImage() { if (currentIndex > 0) { currentIndex--; updateSlider(); } }
+    document.addEventListener("DOMContentLoaded", () => { updateSlider(); });
+
+    // Табы
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById('tab-btn-description').className = "pb-2 text-sm font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition-colors";
+        if(document.getElementById('tab-btn-tracklist')) document.getElementById('tab-btn-tracklist').className = "pb-2 text-sm font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition-colors";
+        document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+        document.getElementById(`tab-btn-${tabName}`).className = "pb-2 text-sm font-bold uppercase tracking-wider border-b-2 border-gray-900 text-gray-900 transition-colors";
+    }
+
+    // Drawer
+    const drawer = document.getElementById('sideDrawer');
+    const backdrop = document.getElementById('sideDrawerBackdrop');
+    function openDrawer() { backdrop.classList.remove('hidden'); setTimeout(() => backdrop.classList.remove('opacity-0'), 10); drawer.classList.remove('translate-x-full'); document.body.style.overflow = 'hidden'; }
+    function closeDrawer() { drawer.classList.add('translate-x-full'); backdrop.classList.add('opacity-0'); setTimeout(() => backdrop.classList.add('hidden'), 300); document.body.style.overflow = ''; }
+</script>
+{% endblock content %}

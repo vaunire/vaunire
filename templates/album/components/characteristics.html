@@ -1,0 +1,45 @@
+<div class="tracking-wide">
+    <h3 class="font-semibold text-base mb-2">Характеристики</h3>
+    <div class="border-t border-b border-gray-200 divide-y divide-gray-200 text-sm">
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Исполнитель</span>
+            <a href="{{ album.artist.get_absolute_url }}" class="text-blue-600 hover:underline font-normal text-right">{{ album.artist.name }}</a>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Формат обложки</span>
+            <span class="text-black text-right">{{ album.package_type|default:"Стандартная" }}</span>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Жанр</span>
+            <a href="{% url 'base' %}?media_type={{ album.media_type.id }}" class="text-blue-600 hover:underline text-right">{{ album.genre.name }}</a>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Количество носителей</span>
+            <span class="text-black text-right">{{ album.format_quantity|default:"1" }}</span>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Содержит нецензурную речь</span>
+            <span class="text-black text-right">{% if album.is_explicit %}Да{% else %}Нет{% endif %}</span>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Год издания</span>
+            <span class="text-black text-right">{{ album.release_date|date:"Y" }}</span>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Страна производства</span>
+            <span class="text-black text-right">{{ album.country|default:"Не указана" }}</span>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Издатель</span>
+            <span class="text-black text-right">{{ album.label|default:"Не указан" }}</span>
+        </div>
+        <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Масса без упаковки, г</span>
+            <span class="text-black text-right">{{ album.weight|default:"-" }}</span>
+        </div>
+         <div class="flex justify-between items-center py-3 gap-4">
+            <span class="text-gray-500">Габариты, мм</span>
+            <span class="text-black text-right">{{ album.dimensions_display }}</span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,207 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="min-h-screen flex justify-center mt-16">
+    <div class="w-full max-w-2xl">
+        
+        <!-- Карточка регистрации -->
+        <div class="bg-white rounded-b-2xl shadow-lg overflow-hidden font-normal">
+            <!-- Декоративная полоса -->
+            <div class="h-1.5 bg-blue-600"></div>
+
+            <div class="p-7">
+                <!-- Заголовок -->
+                <div class="text-center mb-6">
+                    <svg class="text-blue-600 mx-auto mb-2 opacity-90" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M20.82 6.49v1a3 3 0 0 1-.32 1.34a3 3 0 0 1-.87 1.07a3.09 3.09 0 0 1-1.25.57a3.306 3.306 0 0 1-1.38-.03l-4.24-1.2v8.22a4.79 4.79 0 1 1-1.5-3.47V2.46a.639.639 0 0 1 0-.2v-.08a.76.76 0 0 1 .54-.44h.44l6.3 1.79a3 3 0 0 1 2.22 2.93z"/>
+                        <path fill="#4CAF50" transform="translate(14, 14) scale(0.5)" stroke="#4CAF50" stroke-width="1.5" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    <h1 class="text-3xl mt-1.5 font-semibold text-gray-800">
+                        Создайте аккаунт
+                    </h1>
+                    <p class="mt-1 text-gray-500/70 text-sm">Заполните форму для регистрации</p>
+                </div>
+
+                <!-- Форма -->
+                <form method="post" action="{% url 'registration' %}" class="space-y-5">
+                    {% csrf_token %}
+
+                    <!-- Блок ошибок -->
+                    {% if form.errors %}
+                        <div role="alert" class="rounded-sm font-normal border-s-4 border-red-500 bg-red-50 p-2.5">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <p class="text-[13px] ml-1 text-red-700">{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <p class="text-[13px] ml-1 text-red-700">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Поле: Логин -->
+                    <div>
+                        <label for="username" class="flex items-center mb-1.5">
+                            <svg class="text-blue-600 mr-1.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                <path d="M7.5 6.5C7.5 8.981 9.519 11 12 11s4.5-2.019 4.5-4.5S14.481 2 12 2S7.5 4.019 7.5 6.5zM20 21h1v-1c0-3.859-3.141-7-7-7h-4c-3.86 0-7 3.141-7 7v1h17z" fill="currentColor"/>
+                            </svg>
+                            <span class="text-sm font-normal">Имя пользователя</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
+                            </div>
+                            <input type="text" id="username" name="username" value="{{ form.username.value|default:'' }}"
+                                   class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 focus:border-b-blue-500 outline-none transition-all duration-300 placeholder-gray-400/70"
+                                   placeholder="ivan_user" required>
+                        </div>
+                    </div>
+
+                    <!-- Сетка: Имя и Фамилия -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <!-- Имя -->
+                        <div>
+                            <label for="first_name" class="flex items-center mb-1.5">
+                                <svg class="text-blue-600 mr-1.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                    <path d="M15 11h7v2h-7zm1 4h6v2h-6zm-2-8h8v2h-8zM4 19h10v-1c0-2.757-2.243-5-5-5H7c-2.757 0-5 2.243-5 5v1h2zm4-7c1.995 0 3.5-1.505 3.5-3.5S9.995 5 8 5S4.5 6.505 4.5 8.5S6.005 12 8 12z" fill="currentColor"/>
+                                </svg>
+                                <span class="text-sm font-normal">Имя</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
+                                </div>
+                                <input type="text" id="first_name" name="first_name" value="{{ form.first_name.value|default:'' }}"
+                                       class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 outline-none transition-all duration-300 placeholder-gray-400/70"
+                                       placeholder="Иван" required>
+                            </div>
+                        </div>
+                        <!-- Фамилия -->
+                        <div>
+                            <label for="last_name" class="flex items-center mb-1.5">
+                                <svg class="text-blue-600 mr-1.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                    <path d="M15 11h7v2h-7zm1 4h6v2h-6zm-2-8h8v2h-8zM4 19h10v-1c0-2.757-2.243-5-5-5H7c-2.757 0-5 2.243-5 5v1h2zm4-7c1.995 0 3.5-1.505 3.5-3.5S9.995 5 8 5S4.5 6.505 4.5 8.5S6.005 12 8 12z" fill="currentColor"/>
+                                </svg>
+                                <span class="text-sm font-normal">Фамилия</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
+                                </div>
+                                <input type="text" id="last_name" name="last_name" value="{{ form.last_name.value|default:'' }}"
+                                       class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 outline-none transition-all duration-300 placeholder-gray-400/70"
+                                       placeholder="Иванов" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Сетка: Email и Телефон -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <!-- Email -->
+                        <div>
+                            <label for="email" class="flex items-center mb-1.5">
+                                <svg class="text-blue-600 mr-1.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
+                                    <g fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0 0 16 4H4a2 2 0 0 0-1.997 1.884"/><path d="m18 8.118l-8 4l-8-4V14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z"/></g>
+                                </svg>
+                                <span class="text-sm font-normal">Электронная почта</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
+                                </div>
+                                <!-- Пример данных в плейсхолдере -->
+                                <input type="email" id="email" name="email" value="{{ form.email.value|default:'' }}"
+                                       class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 focus:border-b-blue-500 outline-none transition-all duration-300 placeholder-gray-400/70"
+                                       placeholder="example@gmail.com" required>
+                            </div>
+                        </div>
+
+                        <!-- Телефон -->
+                        <div>
+                            <label for="phone" class="flex items-center mb-1.5">
+                                <svg class="text-blue-600 mr-1 opacity-75" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                                    <path d="M20.487 17.14l-4.065-3.696a1.001 1.001 0 0 0-1.391.043l-2.393 2.461c-.576-.11-1.734-.471-2.926-1.66c-1.192-1.193-1.553-2.354-1.66-2.926l2.459-2.394a1 1 0 0 0 .043-1.391L6.859 3.513a1 1 0 0 0-1.391-.087l-2.17 1.861a1 1 0 0 0-.29.649c-.015.25-.301 6.172 4.291 10.766C11.305 20.707 16.323 21 17.705 21c.202 0 .326-.006.359-.008a.992.992 0 0 0 .648-.291l1.86-2.171a.997.997 0 0 0-.085-1.39z" fill="currentColor"/>
+                                </svg>
+                                <span class="text-sm font-normal">Номер телефона</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
+                                </div>
+                                <!-- Пример данных в плейсхолдере -->
+                                <input type="text" id="phone" name="phone" value="{{ form.phone.value|default:'' }}"
+                                       class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 focus:border-b-blue-500 outline-none transition-all duration-300 placeholder-gray-400/70"
+                                       placeholder="+7 (999) 000-00-00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Сетка: Пароли -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <!-- Пароль -->
+                        <div>
+                            <label for="password" class="flex items-center mb-1.5">
+                                <svg class="text-blue-600 mr-1.5 opacity-75" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-sm font-normal">Пароль</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
+                                </div>
+                                <input type="password" id="password" name="password"
+                                       class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 focus:border-b-blue-500 outline-none transition-all duration-300 placeholder-gray-400/70"
+                                       placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <!-- Подтверждение пароля -->
+                        <div>
+                            <label for="confirm_password" class="flex items-center mb-1.5">
+                                <svg class="text-blue-600 mr-1.5 opacity-75" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-sm font-normal">Подтвердите пароль</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
+                                </div>
+                                <input type="password" id="confirm_password" name="confirm_password"
+                                       class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 focus:border-b-blue-500 outline-none transition-all duration-300 placeholder-gray-400/70"
+                                       placeholder="••••••••" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопка и Политика -->
+                    <div>
+                        <button type="submit"
+                                class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg text-sm font-semibold tracking-wider text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                            Зарегистрироваться
+                        </button>
+                        
+                        <!-- Согласие с политикой -->
+                        <p class="text-left text-[11px] text-gray-500 mt-3 leading-normal">
+                            Нажимая кнопку «Зарегистрироваться», вы соглашаетесь с принятой на сайте
+                            <a href="#" class="underline hover:text-blue-600 transition-colors">политикой конфиденциальности</a>
+                            и <a href="#" class="underline hover:text-blue-600 transition-colors">условиями покупки товаров.</a>
+                        </p>
+                    </div>
+
+                    <!-- Ссылка на вход -->
+                    <div class="text-center text-[13px] text-gray-500">
+                        У Вас уже есть аккаунт? 
+                        <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                            Войти
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block footer %}{% endblock footer %}

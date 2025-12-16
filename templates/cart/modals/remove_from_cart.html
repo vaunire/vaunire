@@ -1,0 +1,92 @@
+<div id="deleteModal" class="fixed inset-0 z-50 hidden tracking-wide font-montserrat" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Фон -->
+    <div id="deleteBackdrop" onclick="hideDeleteModal()" class="fixed inset-0 bg-black/50 transition-opacity opacity-0 duration-300 ease-out"></div>
+
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            
+            <!-- Панель -->
+            <div id="deletePanel" class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all scale-95 opacity-0 duration-300 ease-out w-full max-w-[400px] border border-gray-100 p-6">
+                
+                <!-- Иконка -->
+                <div class="flex justify-center mb-3">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-50">
+                        <svg class="text-blue-600 w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <h4 class="text-lg text-black font-semibold mb-3 text-center">Удалить товар?</h4>
+                
+                <!-- Блок с картинкой и названием -->
+                <div class="flex flex-col items-center justify-center mb-6">
+                    <img id="itemImage" src="" alt="Item" class="w-20 h-20 object-cover rounded-lg shadow-sm border border-gray-200 mb-3 hidden">
+                    <p id="itemName" class="text-black font-medium text-center font-montserrat leading-tight px-4"></p>
+                    <p class="text-sm text-gray-500/85 mt-2 text-center font-normal">Товар будет удален из корзины</p>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="flex gap-3">
+                    <button onclick="hideDeleteModal()" class="flex-1 px-3 py-2 text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium text-[13px]">
+                        Отмена
+                    </button>
+                    <a id="deleteLink" href="#" class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm font-medium text-center text-[13px]">
+                        Удалить
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showDeleteModal(ct_model, slug, itemName, itemImage) {
+        const modal = document.getElementById('deleteModal');
+        const backdrop = document.getElementById('deleteBackdrop');
+        const panel = document.getElementById('deletePanel');
+        
+        const deleteLink = document.getElementById('deleteLink');
+        const itemNameElement = document.getElementById('itemName');
+        const itemImageElement = document.getElementById('itemImage');
+        
+        // Устанавливаем данные
+        deleteLink.href = `/cart/remove-from-cart/${ct_model}/${slug}/`;
+        itemNameElement.textContent = itemName;
+        
+        if (itemImage) {
+            itemImageElement.src = itemImage;
+            itemImageElement.classList.remove('hidden');
+        } else {
+            itemImageElement.classList.add('hidden');
+        }
+        
+        // Показываем модалку
+        modal.classList.remove('hidden');
+
+        // Анимация появления
+        setTimeout(() => {
+            backdrop.classList.remove('opacity-0');
+            panel.classList.remove('opacity-0');
+            panel.classList.remove('scale-95');
+            panel.classList.add('scale-100');
+        }, 10);
+    }
+    
+    function hideDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        const backdrop = document.getElementById('deleteBackdrop');
+        const panel = document.getElementById('deletePanel');
+
+        // Анимация исчезновения
+        backdrop.classList.add('opacity-0');
+        panel.classList.remove('scale-100');
+        panel.classList.add('scale-95');
+        panel.classList.add('opacity-0');
+
+        // Скрываем элемент после завершения анимации
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+</script>

@@ -1,0 +1,33 @@
+# --- Переменные окружения ---
+.env
+.env.*
+!.env.example
+
+# --- Управление версиями ---
+.git
+.gitignore
+
+# --- IDE и Система ---
+.idea
+.vscode
+*.sw[op]
+.DS_Store
+
+# --- Python (Кэш и окружение) ---
+__pycache__
+*.py[cod]
+.venv
+venv
+*.log
+.pytest_cache
+.tox
+.coverage*
+
+# --- Данные и Медиа ---
+media/
+static/
+
+# --- Node.js ---
+node_modules/
+npm-debug.log*
+dist/

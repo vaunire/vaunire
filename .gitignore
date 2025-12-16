@@ -1,0 +1,36 @@
+# --- Переменные окружения ---
+.env
+.env.*
+!.env.example
+
+# --- Конфиги редакторов ---
+.vscode/
+.idea/
+*.sw[op]
+
+# --- ОС ---
+.DS_Store
+Thumbs.db
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.log
+
+# --- Тесты и покрытие кода ---
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+coverage.xml
+
+# --- Медиа и Статика ---
+media/
+static/
+*.sql
+
+# --- Фронтенд ---
+node_modules/
+npm-debug.log*

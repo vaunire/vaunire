@@ -1,0 +1,105 @@
+<div class="flex items-center gap-4 tracking-wide flex-shrink-0"
+     x-data="{ 
+        selected: '{{ sort_label|default:"Сначала новые" }}',
+        updateSort(field, value, label) {
+            if (field === 'sort') {
+                this.selected = label; 
+            }
+            const input = document.getElementById(field + '_input');
+            if(input) {
+                input.value = value;
+                htmx.trigger(document.getElementById('filter-form'), 'change');
+            }
+        }
+     }">
+
+    <div class="relative z-40" x-data="{ open: false }">
+        <div class="relative w-64 group">
+            
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-3 w-10 flex items-center justify-center border-r border-gray-400/45 z-10 text-blue-600 transition-colors group-hover/main:text-blue-700 pointer-events-none">
+                <svg class="w-5 h-5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.15" d="M10 18V6L6 10.5 M14 6v12L18 13.5"></path>
+                </svg>
+            </div>
+
+            <button @click="open = !open"
+                    @click.away="open = false"
+                    type="button"
+                    class="w-full pl-[52px] pr-3 py-[7.5px] text-[13px] font-montserrat flex items-center justify-between bg-white shadow-sm rounded-lg outline-none hover:border-blue-400 hover:shadow-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all duration-200">
+                
+                <span class="truncate pr-2 text-gray-700 font-medium" x-text="selected"></span>
+                
+                <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0 transition-transform duration-200"
+                     :class="open ? 'rotate-180' : ''"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+
+            <div x-show="open" 
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 style="display: none;"
+                 class="absolute top-full left-0 right-0 font-montserrat mt-2 bg-white rounded-lg shadow-xl text-[13px] tracking-wide border border-gray-100 overflow-hidden z-50">
+                
+                <div class="py-1 flex flex-col">
+                    <button type="button" @click="updateSort('sort', '', 'Сначала новые'); open = false" 
+                            class="text-left px-4 py-2 hover:bg-gray-50 hover:text-blue-600 transition-colors whitespace-nowrap">
+                        Сначала новые
+                    </button>
+                    
+                    <button type="button" @click="updateSort('sort', 'price_desc', 'По убыванию цены'); open = false" 
+                            class="text-left px-4 py-2 hover:bg-gray-50 hover:text-blue-600 transition-colors whitespace-nowrap">
+                        По убыванию цены
+                    </button>
+                    
+                    <button type="button" @click="updateSort('sort', 'price_asc', 'По возрастанию цены'); open = false" 
+                            class="text-left px-4 py-2 hover:bg-gray-50 hover:text-blue-600 transition-colors whitespace-nowrap">
+                        По возрастанию цены
+                    </button>
+                    
+                    <div class="h-px bg-gray-100 my-1 mx-2"></div> 
+
+                    <button type="button" @click="updateSort('sort', 'name_asc', 'По названию: от А до Я'); open = false" 
+                            class="text-left px-4 py-2 hover:bg-gray-50 hover:text-blue-600 transition-colors whitespace-nowrap group">
+                        По названию: от <span class="text-blue-600 font-semibold group-hover:text-blue-700">А</span> до <span class="text-blue-600 font-semibold group-hover:text-blue-700">Я</span>
+                    </button> 
+                    
+                    <button type="button" @click="updateSort('sort', 'name_desc', 'По названию: от Я до А'); open = false" 
+                            class="text-left px-4 py-2 hover:bg-gray-50 hover:text-blue-600 transition-colors whitespace-nowrap group">
+                        По названию: от <span class="text-blue-600 font-semibold group-hover:text-blue-700">Я</span> до <span class="text-blue-600 font-semibold group-hover:text-blue-700">А</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if show_view_buttons %}
+    <div class="bg-gray-50 p-1 rounded-lg flex items-center gap-1" 
+         x-data="{ currentView: '{{ view_type|default:'grid' }}' }">
+
+        <button type="button"
+                @click="updateSort('view', 'grid', 'grid'); currentView = 'grid'"
+                class="px-3 py-1.5 rounded-md text-sm transition-colors duration-200 focus:outline-none flex items-center justify-center"
+                :class="currentView === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.1" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+        </button>
+
+        <button type="button"
+                @click="updateSort('view', 'list', 'list'); currentView = 'list'"
+                class="px-3 py-1.5 rounded-md text-sm transition-colors duration-200 focus:outline-none flex items-center justify-center"
+                :class="currentView === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+    {% endif %}
+    
+</div>

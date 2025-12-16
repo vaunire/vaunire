@@ -1,0 +1,162 @@
+{% load humanize %}
+{% load static %}
+
+<div id="returns" 
+     class="tab-pane" 
+     x-show="activeTab === 'returns'"
+     style="display: none;"
+     x-data="{
+        expanded: false,
+        
+        // Состояние модалки отмены
+        cancelModal: {
+            isOpen: false,
+            returnId: null,
+            orderId: null
+        },
+
+        // Открытие модалки деталей (простая через ID, т.к. контент динамический внутри цикла)
+        toggleDetailsModal(modalId, show = true) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = show ? 'flex' : 'none';
+        },
+
+        // Открытие модалки отмены
+        openCancelModal(returnId, orderId) {
+            this.cancelModal.returnId = returnId;
+            this.cancelModal.orderId = orderId;
+            this.cancelModal.isOpen = true;
+        },
+
+        // Закрытие модалки отмены
+        closeCancelModal() {
+            this.cancelModal.isOpen = false;
+            // Сбрасываем данные после анимации (300мс)
+            setTimeout(() => {
+                this.cancelModal.returnId = null;
+                this.cancelModal.orderId = null;
+            }, 300);
+        }
+     }">
+    
+    <div class="bg-white p-3 min-h-[400px]">
+        <!-- Заголовок -->
+        <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-3">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Ваши возвраты ({{ customer.return_requests.count }})</h2>
+            </div>
+        </div>
+        
+        <!-- Список возвратов -->
+        <div class="space-y-3 min-h-[400px] pr-2">
+            
+            <!-- Кнопка 'Скрыть' -->
+            <div class="flex justify-end mb-2" x-show="expanded" x-cloak>
+                <button @click="expanded = false" class="text-gray-600 text-[13px] hover:text-gray-800 transition-colors duration-200">
+                    Скрыть
+                </button>
+            </div>
+            
+            {% if customer.return_requests.exists %}
+                {% for return_request in customer.return_requests.all %}
+                    
+                    <!-- Карточка возврата -->
+                    <div class="return-item bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-3 px-7 flex flex-col relative" 
+                         data-order-id="{{ return_request.order.id }}"
+                         x-show="expanded || {{ forloop.counter0 }} < 4">
+                        
+                        <!-- Верхняя часть: Инфо -->
+                        <div class="flex items-center justify-between gap-2 flex-wrap mb-0.5">
+                            <!-- Номер заказа -->
+                            <div class="w-[110px]">
+                                <span class="block text-xs font-normal text-gray-500">Номер заказа</span>
+                                <span class="text-black text-sm">{{ return_request.order.id }}</span>
+                            </div>
+                            <!-- Дата -->
+                            <div class="w-[125px]">
+                                <span class="block text-xs font-normal text-gray-500">Дата заявки</span>
+                                <span class="text-black text-sm">{{ return_request.created_at|date:"d.m.Y" }}</span>
+                            </div>
+                            <!-- Статус -->
+                            <div class="w-[260px]">
+                                <span class="block text-xs font-normal text-gray-500 mb-0.5">Статус</span>
+                                    {% include 'profile/components/status_badge.html' with status=return_request.status text=return_request.get_status_display %}
+                            </div>
+                            
+                            <!-- Кол-во и Действия -->
+                            <div class="flex items-center gap-4 w-[200px]">
+                                <div class="w-[180px] -ml-12">
+                                    <span class="block text-xs font-normal text-gray-500">Кол-во товаров</span>
+                                    <span class="text-black text-sm">{{ return_request.products.count }}</span>
+                                </div>
+                                <div class="flex gap-3">
+                                    <!-- Кнопка деталей --> 
+                                    <button @click="$dispatch('open-modal-return-details-{{ return_request.id }}')" 
+                                            class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 transition-all duration-300 hover:scale-105" 
+                                            title="Посмотреть детали">
+                                        <svg class="w-4 h-4 opacity-80 hover:text-blue-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/>
+                                        </svg>
+                                    </button>
+                                
+                                    <!-- Кнопка отмены (активна только если pending) -->
+                                    {% if return_request.status == 'pending' %}
+                                        <button @click="openCancelModal('{{ return_request.id }}', '{{ return_request.order.id }}')" 
+                                                class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 hover:text-blue-700 transition-all duration-300 hover:scale-105" 
+                                                title="Отменить заявку">
+                                            <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    {% else %}
+                                        <button class="p-1.5 bg-gray-100 text-gray-300 rounded-md cursor-not-allowed" disabled>
+                                            <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Нижняя часть: Причина и Ссылка -->
+                        <div class="border-t border-gray-200 mt-3 mb-2"></div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[13px]">Причина:</span>
+                                <span class="text-gray-600 text-[13px]">{{ return_request.get_reason_display }}</span>
+                            </div>
+                            <a href="#" class="text-blue-700 hover:text-blue-800 text-[13px] font-normal flex items-center gap-1 transition-colors">
+                                <span>Условия возврата товара</span>
+                            </a>
+                        </div>
+                    </div> 
+                    
+                    <!-- Модалка деталей (подгружается для каждого элемента) -->
+                    {% include "profile/modals/return_details.html" %}
+                    
+                {% endfor %}
+
+                <!-- Кнопка "Показать все" -->
+                {% if customer.return_requests.count > 3 %}
+                    <div class="text-center mt-4" x-show="!expanded">
+                        <button @click="expanded = true" class="text-blue-500 text-sm font-medium hover:text-blue-800 transition-colors duration-200">
+                            Показать все
+                        </button>
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <!-- Пустое состояние -->
+                <div class="text-center py-12">
+                    <svg class="w-14 h-14 mx-auto text-gray-300 mb-2.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="m21 18.15l-15-15V1h9l6 6zm-.5 5.15L16.2 19H6V8.8L.7 3.5l1.4-1.4l19.8 19.8zM14 8h5.5L14 2.5L19.5 8L14 2.5zM2 23V8h2v13h12v2z"/>
+                    </svg>
+                    <p class="text-base font-light text-gray-600">У Вас нет заявок на возврат</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include "profile/modals/cancel_return.html" %}
+</div>

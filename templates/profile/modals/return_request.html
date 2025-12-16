@@ -1,0 +1,225 @@
+{% load static humanize%}
+<div x-data="{
+        id: {{ order.id|default:'0' }}, 
+        isOpen: false,
+        
+        // Файлы
+        fileName: null,
+        
+        // Дропдаун
+        reason: '',
+        reasonLabel: 'Выберите из списка...',
+        isDropdownOpen: false,
+        reasons: [
+            {val: 'defective', label: 'Товар поврежден (брак/дефект)'},
+            {val: 'wrong', label: 'Пришел не тот товар'},
+            {val: 'not_needed', label: 'Больше не актуально'},
+            {val: 'other', label: 'Другая причина'}
+        ],
+
+        // Чекбоксы и валидация
+        selectedProducts: [],
+        showError: false,
+
+        init() {
+            // Блокируем скролл страницы при открытии
+            this.$watch('isOpen', value => {
+                document.body.style.overflow = value ? 'hidden' : '';
+            });
+        },
+
+        // Обработка файла
+        handleFile(event) {
+            const file = event.target.files[0];
+            this.fileName = file ? file.name : null;
+        },
+
+        // Очистка файла
+        clearFile() {
+            this.fileName = null;
+            document.getElementById('return-file-input-' + this.id).value = '';
+        },
+
+        // Отправка
+        submitForm() {
+            if (this.selectedProducts.length === 0) {
+                this.showError = true;
+            } else {
+                document.getElementById('return-form-native-' + this.id).submit();
+            }
+        }
+     }"
+     @open-modal-return-{{ order.id }}.window="isOpen = true"
+     @keydown.escape.window="isOpen = false">
+
+    <template x-teleport="body">
+        <div class="fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center tracking-wide z-[9999]"
+             x-show="isOpen"
+             style="display: none;">
+            
+            <!-- Окно -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg max-h-[90vh] flex flex-col relative"
+                 @click.outside="isOpen = false">
+                
+                <!-- Заголовок -->
+                <div class="flex justify-between items-center mb-3 flex-shrink-0">
+                    <div class="flex items-center gap-2">
+                        <svg class="text-blue-600 w-5 h-5 mb-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+                            <path fill="currentColor" d="M300 225L0 525h225v375h450L525 750H375V525h225zm225 75l150 150h150v225H600l300 300l300-300H975V300z"/>
+                        </svg>
+                        <h3 class="text-lg font-medium text-black">Запрос на возврат (Заказ №{{ order.id }})</h3>
+                    </div>
+                    
+                    <button type="button" @click="isOpen = false" class="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Контент -->
+                <div class="overflow-y-auto p-1 pr-2 custom-scrollbar flex-1">
+                    <!-- Форма -->
+                    <form :id="'return-form-native-' + id" action="{% url 'submit_return' order.id|default:'0' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="space-y-5">
+                            
+                            <!-- Список товаров -->
+                            <div>
+                                <p class="text-[13px] font-normal tracking-wider text-gray-500">Выберите товары для возврата:</p>
+                                <div class="space-y-2">
+                                    {% for item in order.cart.products.all %}
+                                        <label class="flex items-center gap-3.5 p-2 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer"
+                                               :class="selectedProducts.includes('{{ item.id }}') ? 'bg-blue-50/50' : ''">
+                                            
+                                            <input type="checkbox" 
+                                                   name="return-products" 
+                                                   value="{{ item.id }}" 
+                                                   x-model="selectedProducts"
+                                                   @change="showError = false"
+                                                   class="h-4 w-4 text-blue-600 border-gray-300 rounded cursor-pointer focus:ring-0 focus:outline-none focus:ring-offset-0">
+                                            
+                                            <div class="flex items-center gap-3 flex-1">
+                                                <img src="{{ item.content_object.image.url }}" alt="{{ item.content_object.name }}" class="w-12 h-12 object-cover rounded-md shadow-sm">
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-normal text-black truncate">{{ item.content_object.name }}</p>
+                                                    <p class="text-[13px] font-normal text-gray-500 truncate">{{ item.content_object.artist.name }}</p>
+                                                </div>
+                                                <div class="text-right pl-2">
+                                                    <p class="text-sm font-medium text-black">{{ item.content_object.current_price|floatformat:0|intcomma }} ₽</p>
+                                                    <p class="text-xs font-normal text-gray-400/70">{{ item.quantity }} шт.</p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    {% endfor %}
+                                    
+                                    <p x-show="showError" x-cloak class="text-red-700 font-normal text-xs">Выберите хотя бы один товар.</p>
+                                </div>
+                            </div>
+
+                            <!-- Причина возврата -->
+                            <div class="relative font-normal">
+                                <label class="block text-[13px] -mt-3 font-normal text-black mb-1">Причина возврата</label>
+                                <input type="hidden" name="return-reason" :value="reason" required>
+
+                                <button type="button" 
+                                        @click="isDropdownOpen = !isDropdownOpen" 
+                                        @click.outside="isDropdownOpen = false"
+                                        class="relative w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm pl-3 pr-10 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-[13px] transition-colors duration-200"
+                                        :class="isDropdownOpen ? 'border-blue-500 ring-1 ring-blue-500 bg-white' : ''">
+                                    <span class="block truncate" :class="reason ? 'text-black' : 'text-gray-500'" x-text="reasonLabel"></span>
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                        <svg class="h-4 w-4 text-gray-400 transition-transform duration-200" :class="isDropdownOpen ? 'rotate-180 text-blue-500' : ''" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </span>
+                                </button>
+
+                                <ul x-show="isDropdownOpen" x-cloak class="absolute z-20 mt-1 w-full bg-white shadow-lg max-h-60 rounded-lg font-normal py-0.5 ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-[13px]">
+                                    <template x-for="option in reasons" :key="option.val">
+                                        <li @click="reason = option.val; reasonLabel = option.label; isDropdownOpen = false"
+                                            class="text-gray-900 cursor-pointer select-none relative py-2.5 pl-3 pr-9 hover:bg-blue-50 transition-colors"
+                                            :class="reason === option.val ? 'bg-blue-50 text-blue-900 font-medium' : 'font-normal'">
+                                            <span class="block truncate" x-text="option.label"></span>
+                                            <span x-show="reason === option.val" class="absolute inset-y-0 right-0 flex items-center pr-4 text-blue-600">
+                                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                            </span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+
+                            <!-- Шаблон -->
+                            <div class="border border-blue-100 bg-blue-50/50 p-3 rounded-xl flex items-center gap-3.5">
+                                <div class="bg-white p-1.5 rounded-lg shadow-sm">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[13px] font-normal text-gray-500/85">Для оформления нужен скан заявления</p>
+                                    <a href="{% static 'files/refund_template.pdf' %}" download class="text-[13px] font-normal text-blue-700 hover:text-blue-800 hover:underline flex items-center gap-1 transition-colors">
+                                        Скачать шаблон заявления
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Загрузка файла -->
+                            <div>
+                                <span class="block text-[13px] font-normal text-black mb-1.5">Заявление с подписью (фото или скан)</span>
+                                <div class="relative group">
+                                    <input type="file" 
+                                           :id="'return-file-input-' + id" 
+                                           name="return-file" 
+                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                           required 
+                                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                                           @change="handleFile($event)">
+                                    
+                                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center text-center bg-gray-50 transition-colors group-hover:bg-gray-100 group-hover:border-blue-400"
+                                         :class="fileName ? 'border-blue-500 bg-blue-50/50' : ''">
+                                        
+                                        <div x-show="!fileName" class="flex flex-col items-center">
+                                            <svg class="w-7 h-7 text-gray-400/70 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                            <span class="text-[13px] text-blue-700 font-normal">Загрузить файл</span>
+                                            <span class="text-xs font-normal text-gray-400 mt-0.5">PDF, DOC, JPG, PNG до 10 МБ</span>
+                                        </div>
+
+                                        <div x-show="fileName" x-cloak class="flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            <span class="text-sm text-gray-800 font-medium truncate max-w-[200px]" x-text="fileName"></span>
+                                            <button type="button" @click.prevent="clearFile()" class="text-gray-400 hover:text-red-500 z-20 ml-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Комментарий -->
+                            <div>
+                                <label class="block text-[13px] font-normal text-black mb-1">Комментарий</label>
+                                <textarea name="return-details" rows="3" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-[13px] bg-white resize-none" placeholder="Опишите проблему подробнее..."></textarea>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Футер -->
+                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0">
+                    <button type="button" 
+                            class="px-5 py-2.5 bg-gray-50 text-gray-800 text-xs font-semibold rounded-xl hover:bg-gray-100 border border-gray-200 transition-all duration-200" 
+                            @click="isOpen = false">
+                        Отмена
+                    </button>
+                    <button type="button" 
+                            @click="submitForm()"
+                            class="px-5 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all duration-200 flex items-center gap-2">
+                        <span>Отправить запрос</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>

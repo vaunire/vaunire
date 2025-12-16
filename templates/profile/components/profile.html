@@ -1,0 +1,175 @@
+{% load static %}
+
+<!-- Вкладка: Данные аккаунта -->
+<div id="account" class="tab-pane"
+     x-data="{
+        isEditing: {{ is_editing|yesno:'true,false' }},
+        photoPreview: null,
+        
+        updatePreview(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.photoPreview = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+     }">
+
+    <div class="p-3 min-h-[400px]">
+        
+        <!-- Заголовок -->
+        <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-3">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Данные аккаунта</h2>
+            </div>
+            
+            <template x-if="!isEditing">  
+                <button type="button" 
+                        @click="isEditing = true" 
+                        class="group flex items-center gap-2 px-4 py-2 bg-white text-gray-600 text-xs font-semibold rounded-full border border-gray-200 shadow-sm hover:border-blue-400 hover:text-blue-600 transition-all duration-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-blue-500 transition-colors"></span>
+                    <span>Редактировать</span>
+                </button>
+            </template>
+        </div>
+
+        <!-- Форма -->
+        <div class="pt-0 font-normal">
+            <form method="POST" action="{% url 'update_profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="flex flex-col md:flex-row gap-7">
+                    
+                    <!-- Левая колонка: Аватар -->
+                    <div class="flex-shrink-0 flex flex-col items-center md:items-start justify-center md:justify-start">
+                        <div class="group relative">
+                            <!-- Круглое превью -->
+                            <div class="relative overflow-hidden rounded-full w-32 h-32 md:w-36 md:h-36 bg-gray-100 ring-4 ring-white shadow-sm">
+                                <img :src="photoPreview || '{{ customer.get_avatar_url }}'" 
+                                    alt="Avatar" 
+                                    class="w-full h-full object-cover transition-transform duration-500">
+                                
+                                <!-- Оверлей редактирования -->
+                                <label x-show="isEditing" 
+                                    x-transition.opacity
+                                    for="id_avatar" 
+                                    class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <svg class="text-white w-6 h-6 mb-1" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" />
+                                        <path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71.386.054.77.113 1.152.177 1.432.239 2.429 1.493 2.429 2.909V18a3 3 0 01-3 3h-15a3 3 0 01-3-3V9.574c0-1.416.997-2.67 2.429-2.909.382-.064.766-.123 1.151-.178a1.56 1.56 0 001.11-.71l.822-1.315a2.942 2.942 0 012.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-1.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-[9px] text-white font-semibold uppercase tracking-widest">Фото</span>
+                                </label>
+                            </div>
+                            
+                            <input type='file' 
+                                id="id_avatar" 
+                                name="avatar" 
+                                accept=".png, .jpg, .jpeg" 
+                                class="hidden" 
+                                :disabled="!isEditing"
+                                @change="updatePreview($event)" />
+                        </div>
+
+                        <div x-show="isEditing" x-transition class="text-center w-full mt-2.5">
+                            <p class="text-[10px] text-gray-400 leading-tight">Макс. размер 5MB<br>Форматы: JPG, PNG</p>
+                        </div>
+
+                    </div>
+
+                    <!-- Правая колонка: Поля -->
+                    <div class="flex-grow max-w-[700px] space-y-3.5">
+                        <fieldset :disabled="!isEditing" class="block space-y-3.5">
+                            
+                            <!-- Ряд 1 -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Имя -->
+                                <div>
+                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+                                        </svg>
+                                        Имя
+                                    </label>
+                                    {{ form.first_name }}
+                                    <div class="text-xs text-red-500 mt-1 ml-1">{{ form.first_name.errors }}</div>
+                                </div>
+
+                                <!-- Фамилия -->
+                                <div>
+                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+                                        </svg>
+                                        Фамилия
+                                    </label>
+                                    {{ form.last_name }}
+                                    <div class="text-xs text-red-500 mt-1 ml-1">{{ form.last_name.errors }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Ряд 2 -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <!-- Email -->
+                                <div>
+                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
+                                            <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
+                                        </svg>
+                                        Email
+                                    </label>
+                                    {{ form.email }}
+                                    <div class="text-xs text-red-500 mt-1 ml-1">{{ form.email.errors }}</div>
+                                </div>
+
+                                <!-- Телефон -->
+                                <div>
+                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        <svg class="text-blue-600 -mr-0.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M20.487 17.14l-4.065-3.696a1.001 1.001 0 0 0-1.391.043l-2.393 2.461c-.576-.11-1.734-.471-2.926-1.66c-1.192-1.193-1.553-2.354-1.66-2.926l2.459-2.394a1 1 0 0 0 .043-1.391L6.859 3.513a1 1 0 0 0-1.391-.087l-2.17 1.861a1 1 0 0 0-.29.649c-.015.25-.301 6.172 4.291 10.766C11.305 20.707 16.323 21 17.705 21c.202 0 .326-.006.359-.008a.992.992 0 0 0 .648-.291l1.86-2.171a.997.997 0 0 0-.085-1.39z" fill="currentColor"/></svg>
+                                        Телефон
+                                    </label>
+                                    {{ form.phone }}
+                                    <div class="text-xs text-red-500 mt-1 ml-1">{{ form.phone.errors }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Адрес -->
+                            <div>
+                                <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                    <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                                    </svg>
+                                    Адрес доставки
+                                </label>
+                                {{ form.address }}
+                                <div class="text-xs text-red-500 mt-1 ml-1">{{ form.address.errors }}</div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Кнопки действий -->
+                        <div x-show="isEditing" 
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-2"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="flex items-center justify-end gap-3">
+                            
+                            <a href="{% url 'account' %}" 
+                               class="px-4 py-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                Отмена
+                            </a>
+                            
+                            <button type="submit" 
+                                    class="px-4 py-2 text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition-colors">
+                                Сохранить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

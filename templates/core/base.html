@@ -1,0 +1,121 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vaunire | Музыкальный интернет-магазин{% endblock %}</title>
+    <link rel="icon" href="{% static 'images/logo/favicon.svg' %}" />
+
+    <!-- 1. Шрифты  -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    
+    <!-- 2. Стили -->
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css" />
+    
+    <!-- 3. Кастомные стили -->
+    <link rel="stylesheet" href="{% static 'css/filters.css' %}">
+
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Место для скриптов в head (если нужно) -->
+    {% block extra_head_scripts %}{% endblock %}
+    
+    <style>
+    [x-cloak] { display: none !important; }
+    
+    .signature-icon { 
+        transition: opacity 0.3s ease;
+        display: block; 
+    }
+
+    .group:hover .signature-icon { 
+        animation: signature-write 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) both; 
+    }
+    
+    @keyframes signature-write {
+        0% {
+            clip-path: inset(0 100% 0 0);
+            opacity: 0.5;
+        }
+        100% {
+            clip-path: inset(0 0 0 0);
+            opacity: 1;
+        }
+    }
+
+    #loading-indicator.htmx-request .loader-content { display: flex !important; }
+    #loading-indicator.htmx-request .content-grid { display: none !important; }
+    </style>
+    
+    <!-- 4. Основные библиотеки -->
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js" defer></script>
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <!-- Сторонние библиотеки -->
+    <script src="https://unpkg.com/imask" defer></script>
+    <script src="{% static 'js/htmx_init.js' %}" defer></script>
+</head>
+
+<body class="bg-gray-100 pt-20 font-montserrat tracking-wide">
+    
+    <!-- Навбар -->
+    {% include 'core/navbar/navbar.html' %}
+
+    <!-- Контент -->
+    <main class="flex-grow min-h-screen">
+    {% block content %}
+        <div class="container mx-auto max-w-[1325px] px-4 py-5 pb-60">
+            <!-- Хиты продаж -->
+            <div class="max-w-full mb-6">
+                {% include 'catalog/sections/highlights.html' %}
+            </div>
+            
+            <!-- Сетка: Фильтры + Товары -->
+            <div class="flex flex-col lg:flex-row gap-5">
+                
+                <!-- Фильтры (слева) -->
+                <div class="w-full lg:w-64 flex-shrink-0">
+                    {% include 'catalog/controls/filters.html' %}
+                </div>
+
+                <!-- Альбомы (справа) -->
+                <div id="catalog-content" class="flex-1 min-w-0">
+                    {% include 'catalog/sections/content.html' %}
+                </div>
+            </div>
+        </div>
+    </main>
+    {% endblock content %}
+
+    <!-- Футер -->
+    {% block footer %}
+        {% include 'core/footer/footer.html' %}
+    {% endblock %}
+
+    <!-- Баннеры -->
+    {% include 'core/components/cookie_banner.html' %}
+    {% include 'core/components/promocode_banner.html' %}
+
+    {% block js %}
+    <script defer src="{% static 'js/carousel.js' %}"></script>
+    {% endblock %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const phoneInputs = document.querySelectorAll('input[name="phone"]');
+            if (phoneInputs.length > 0 && typeof IMask !== 'undefined') {
+                phoneInputs.forEach(input => {
+                    IMask(input, { mask: '+{7} (000) 000-00-00' });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

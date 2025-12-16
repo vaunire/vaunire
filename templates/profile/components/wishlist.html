@@ -1,0 +1,89 @@
+{% load humanize %}
+
+<div id="wishlist" 
+     class="tab-pane" 
+     x-show="activeTab === 'wishlist'"
+     style="display: none;">
+     
+    <div class="bg-white p-3 min-h-[400px]">
+        
+        <!-- Заголовок секции -->
+        <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-3">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Лист ожидания</h2>
+            </div>
+        </div>
+
+        <!-- Сетка товаров -->
+        <div class="grid grid-cols-1 gap-3">
+            {% for album in customer.wishlist.all %}
+                
+                <!-- Карточка товара -->
+                <div class="flex items-center justify-between bg-white py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+                    
+                    <!-- Левая часть: Изображение и Инфо -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Обложка -->
+                        <img src="{{ album.image.url }}" alt="{{ album.name }}" class="w-14 h-14 object-cover rounded-md shadow-sm border border-gray-100 flex-shrink-0">
+
+                        <!-- Текст -->
+                        <div class="min-w-0">
+                            <a href="{{ album.get_absolute_url }}" class="text-black font-medium hover:text-blue-600 transition-colors duration-300 leading-tight block truncate">
+                                {{ album.name }}
+                            </a>
+                            <a href="{{ album.artist.get_absolute_url }}" class="text-gray-600 font-normal text-[13px] hover:text-blue-600 transition-colors block">
+                                {{ album.artist.name }}
+                            </a>
+                            <span class="text-sm font-medium text-black block mt-0.5">
+                                {{ album.current_price|floatformat:0|default:'0'|intcomma }} ₽
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Правая часть: Действия -->
+                    <div class="flex gap-2.5 opacity-75 flex-shrink-0">
+                        
+                        <!-- Кнопка: Избранное -->
+                        {% if album in request.user.customer.favorite.all %}
+                            <!-- Удалить из избранного (исправлена синтаксическая ошибка) -->
+                            <a href="{% url 'remove_from_favorite' album_id=album.id %}" 
+                               class="p-1.5 bg-gray-100 rounded-md hover:bg-gray-200 text-red-500 transition-all duration-300 hover:scale-105"
+                               title="Удалить из избранного">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M2 9.137C2 14 6.02 16.591 8.962 18.911C10 19.729 11 20.5 12 20.5s2-.77 3.038-1.59C17.981 16.592 22 14 22 9.138c0-4.863-5.5-8.312-10-3.636C7.5.825 2 4.274 2 9.137"/>
+                                </svg>
+                            </a>
+                        {% else %}
+                            <!-- Добавить в избранное -->
+                            <a href="{% url 'add_to_favorite' album_id=album.id %}" 
+                               class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 hover:text-red-500 transition-all duration-300 hover:scale-105"
+                               title="Добавить в избранное">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M2 9.137C2 14 6.02 16.591 8.962 18.911C10 19.729 11 20.5 12 20.5s2-.77 3.038-1.59C17.981 16.592 22 14 22 9.138c0-4.863-5.5-8.312-10-3.636C7.5.825 2 4.274 2 9.137"/>
+                                </svg>
+                            </a>
+                        {% endif %}
+
+                        <!-- Кнопка: Удалить из листа ожидания -->
+                        <a href="{% url 'remove_from_wishlist' album_id=album.id %}" 
+                           class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 hover:text-blue-700 transition-all duration-300 hover:scale-105"
+                           title="Удалить из листа ожидания">
+                            <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+            {% empty %}
+                <!-- Пустое состояние -->
+                <div class="col-span-full text-center py-12">
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19.8 22.6L1.4 4.2l1.4-1.4l18.4 18.4zM14 11.15l-2-2V3h6v4h-4zM10 21q-1.65 0-2.825-1.175T6 17t1.175-2.825T10 13q.575 0 1.063.138t.937.412V12l2 2v3q0 1.65-1.175 2.825T10 21"/>
+                    </svg>
+                    <p class="text-base font-light text-gray-600">Ваш список ожидаемого пуст</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

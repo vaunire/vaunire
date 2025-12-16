@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+body,
+.font-sans,
+.prose {
+    font-family: 'Montserrat', sans-serif !important;
+    letter-spacing: 0.02em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.text-lg,
+.text-xl,
+.text-2xl,
+.text-3xl {
+    font-weight: 400 !important;
+}
+
+.font-montserrat h1,
+.font-montserrat h2,
+.font-montserrat h3,
+.font-montserrat h4,
+.font-montserrat h5,
+.font-montserrat h6,
+.font-montserrat .text-lg,
+.font-montserrat .text-xl,
+.font-montserrat .text-2xl,
+.font-montserrat .text-3xl {
+    font-weight: 600 !important;
+    letter-spacing: 0.01em;
+}
+
+.vaunire-title {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+}
+
+.vaunire-main {
+    display: inline-flex;
+    align-items: baseline;
+}
+
+.vaunire-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.vaunire-dot {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #000000;
+    margin-left: 0.1875rem;
+    margin-right: 0.1875rem;
+}
+
+.vaunire-admin {
+    font-size: 1rem;
+    color: #000000;
+    font-weight: 500;
+}
+
+.vaunire-subtitle {
+    font-size: 0.8rem;
+    color: #000000;
+    font-weight: 400;
+    letter-spacing: 0.035em;
+    margin-top: 0.125rem;
+    margin-left: 0.125rem;
+}

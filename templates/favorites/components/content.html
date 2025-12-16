@@ -1,0 +1,18 @@
+{% if page_obj %}
+    <!-- Сетка избранных товаров -->
+    <div class="flex flex-wrap gap-3">
+        {% for album in page_obj %}
+            <!-- Карточка альбома -->
+            <div id="fav-card-{{ album.id }}" class="w-60 mb-72 min-w-[calc(20%-10px)] flex-shrink-0">
+                {% include 'catalog/cards/grid_card.html' with album=album %}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% include 'catalog/controls/pagination.html' %}
+
+{% else %}
+    <!-- Пустое состояние -->
+    {% include 'favorites/states/empty.html' %}
+{% endif %}

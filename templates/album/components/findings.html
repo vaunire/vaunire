@@ -1,0 +1,41 @@
+{% if recently_viewed_albums %}
+<div class="max-w-[1345px] mx-auto mb-20 px-4 lg:px-8 font-montserrat">
+    <div class="flex items-center justify-between mb-3.5">
+        <h2 class="text-xl font-semibold">Ваши находки</h2>
+        
+        <!-- Кнопки навигации -->
+        {% if recently_viewed_albums|length > 5 %}
+        <div class="flex items-center">
+            <!-- Точки -->
+            <div class="flex items-center gap-1.5 mr-4" id="rvDots">
+                <div class="w-1.5 h-1.5 rounded-full bg-black transition-colors duration-200" data-index="0"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 transition-colors duration-200" data-index="1"></div>
+                {% if recently_viewed_albums|length > 10 %}
+                <div class="w-1.5 h-1.5 rounded-full bg-gray-300 transition-colors duration-200" data-index="2"></div>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center gap-1.5">
+                <button onclick="scrollRecentlyViewed('left')" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <button onclick="scrollRecentlyViewed('right')" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Карусель (Скролл контейнер) -->
+    <div class="relative group">
+        <div id="recentlyViewedContainer" class="flex gap-5 overflow-x-auto hide-scrollbar pb-4">
+            {% for album in recently_viewed_albums %}
+                <div class="flex-shrink-0 w-[240px]">
+                    {% include 'catalog/cards/grid_card.html' with album=album %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}

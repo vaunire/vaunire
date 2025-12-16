@@ -1,0 +1,107 @@
+{% if messages %}
+<!-- Контейнер сообщений -->
+<div id="messages-container" class="my-3 flex flex-col gap-2 transition-all duration-300">
+    {% for message in messages %}
+    
+    <!-- Карточка сообщения -->
+    <div class="message-item relative w-full flex items-center py-2.5 px-3 bg-white shadow-sm border-l-4 
+                transform transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] translate-y-0 opacity-100 max-h-[100px] overflow-hidden
+                {% if message.tags == 'success' %} border-green-500 text-green-700
+                {% elif message.tags == 'error' %} border-red-500 text-red-700
+                {% else %} border-orange-500 text-orange-700 {% endif %}"
+         role="alert">
+   
+        <!-- Иконка статуса -->
+        <div class="mr-2.5 pl-0.5 flex-shrink-0">
+            {% if message.tags == 'success' %}
+                <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            {% elif message.tags == 'error' %}
+                <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            {% else %}
+                <svg class="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            {% endif %}
+        </div>
+        
+        <!-- Текст сообщения -->
+        <div class="flex-1 pr-1.5">
+            <p class="text-[13px] font-normal mb-0.5 leading-tight">
+                {{ message }}
+            </p>
+        </div>
+
+        <!-- Кнопка закрытия -->
+        <button type="button" 
+                onclick="closeMessage(this.closest('.message-item'))" 
+                class="flex-shrink-0 p-1 ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors focus:outline-none cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Скрипты анимации -->
+<script>
+    /**
+     * Функция закрытия сообщения с анимацией
+     */
+    function closeMessage(element) {
+        if (!element) return;
+        const container = document.getElementById('messages-container');
+
+        // 1. Анимация исчезновения (уезд вверх + прозрачность)
+        element.style.transform = 'translateY(-100%)'; 
+        element.style.opacity = '0';
+        
+        // 2. Схлопывание блока (убираем высоту и отступы)
+        setTimeout(() => {
+            element.style.maxHeight = '0';
+            element.style.marginTop = '0';
+            element.style.marginBottom = '0';
+            element.style.paddingTop = '0';
+            element.style.paddingBottom = '0';
+            element.style.borderWidth = '0';
+        }, 200);
+
+        // 3. Полное удаление из DOM
+        setTimeout(() => {
+            element.remove();
+            
+            // Если сообщений не осталось, удаляем контейнер
+            if (container && container.children.length === 0) {
+                container.style.display = 'none';
+                container.remove();
+            }
+        }, 500);
+    }
+
+    // Инициализация при загрузке (появление и автозакрытие)
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('.message-item');
+        
+        messages.forEach((msg, index) => {
+            // Начальное состояние (скрыто)
+            msg.style.opacity = '0';
+            msg.style.transform = 'translateY(10px)';
+            
+            // Плавное появление каскадом
+            setTimeout(() => {
+                msg.style.opacity = '1';
+                msg.style.transform = 'translateY(0)';
+            }, 100 + (index * 100));
+
+            // Таймер автозакрытия (увеличивается для каждого следующего сообщения)
+            setTimeout(() => {
+                closeMessage(msg);
+            }, 4000 + (index * 500));
+        });
+    });
+</script>
+{% endif %}

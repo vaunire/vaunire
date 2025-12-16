@@ -1,0 +1,134 @@
+{% load humanize %}
+
+<div id="cart-summary" class="w-[408px] flex-shrink-0 font-montserrat tracking-wide">
+    <div class="sticky top-24 space-y-4">
+        <div class="filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+            
+            <div class="bg-white rounded-t-xl p-6 pb-2">
+                <div class="flex items-center justify-between mb-3.5">
+                    <h4 class="text-xl font-semibold font-geologica text-black">Ваш заказ ({{ cart.total_products }})</h4>
+                </div>
+
+                <div class="space-y-3 max-h-[280px] overflow-y-auto custom-scrollbar pr-1">
+                    {% for item in cart.products.all %}
+                        <div class="flex flex-col group">
+                            <div class="flex items-baseline justify-between w-full text-sm overflow-hidden">
+                                <span class="text-blue-600 font-semibold text-xs mr-2 flex-shrink-0">
+                                    {{ forloop.counter }}.
+                                </span>
+                                
+                                <span class="text-black font-normal truncate group-hover:text-blue-700 transition-colors" title="{{ item.display_name }}">
+                                    {{ item.display_name }}
+                                </span>
+
+                                <span class="flex-1 mx-2 border-b-[2px] border-dotted border-gray-300/90 mb-[5px] min-w-[10px]"></span>
+
+                                <span class="font-semibold text-black whitespace-nowrap flex-shrink-0">
+                                    {{ item.final_price|floatformat:0|intcomma }} ₽
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between pl-5 mt-0.5">
+                                <span class="text-[11px] font-normal text-gray-500/85 uppercase tracking-widest">
+                                    {{ item.content_object.get_format }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="relative h-5 w-full">
+                <div class="absolute inset-0 w-full h-full" style="background: radial-gradient(circle at 0 50%, transparent 8px, #ffffff 8.5px), radial-gradient(circle at 100% 50%, transparent 8px, #ffffff 8.5px); background-position: top left, top right; background-size: 51% 100%; background-repeat: no-repeat;"></div>
+                <div class="absolute inset-x-4 top-1/2 border-t-2 border-dashed border-gray-200/70"></div>
+            </div>
+
+            <div class="bg-white rounded-b-xl p-6 pt-2 space-y-3">
+                {% if cart.applied_promocode %}
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500 font-normal uppercase tracking-widest">Промокод</span>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-[18px] h-[18px] text-blue-600 transform -rotate-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        <span class="inline-flex items-center px-2 py-0.5 border border-gray-300 rounded text-[11px] font-bold text-gray-800 bg-gray-50 uppercase tracking-widest">
+                            {{ cart.applied_promocode.code }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500 font-normal uppercase tracking-widest">Скидка</span>
+                    {% if cart.discount %}
+                        <span class="text-sm font-semibold text-blue-600">− {{ cart.discount|floatformat:0|intcomma }} ₽</span>
+                    {% else %}
+                        <span class="text-sm font-medium text-gray-400">0 ₽</span>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t-[1px] border-gray-200/65">
+                    <div class="flex flex-col">
+                        <span class="text-xs uppercase tracking-widest text-gray-500 font-normal">К оплате</span>
+                    </div>
+                    <div class="text-right mt-1.5 flex flex-col items-end">
+                        <span class="text-2xl font-semibold text-black leading-none tracking-wide">
+                            {{ cart.final_price|floatformat:0|intcomma }} ₽
+                        </span>
+                        {% if cart.discount > 0 %}
+                            <span class="text-[15px] text-gray-300 line-through font-normal mt-1">
+                                {{ cart.original_price|floatformat:0|intcomma }} ₽
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-2.5 border border-gray-200">
+            <form method="POST" action="{% url 'apply_promocode' %}">
+                {% csrf_token %}
+                <div class="flex items-center gap-3">
+                    <div class="shrink-0 ml-1 flex items-center justify-center">
+                        <svg id="promo-icon" class="w-5 h-5 text-gray-400 transition-colors duration-300 transform -rotate-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="promo-code" name="promo_code" placeholder="Введите промокод" oninput="checkPromoInput(this)" class="w-full px-3 py-1.5 border border-gray-300 rounded-md font-normal text-[13px] focus:outline-none focus:ring-1 focus:ring-blue-600 transition-shadow">
+                    <button type="submit" id="promo-button" disabled class="p-2.5 bg-blue-600 text-white rounded-md transition-colors duration-200 focus:ring-2 focus:ring-gray-500 focus:outline-none disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-3.5 border border-gray-200">
+            <button onclick="showClearCartModal()" class="group w-full px-4 py-2 bg-white text-gray-600 text-center rounded-md border border-gray-300 hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:shadow-inner">
+                <svg class="text-gray-400 group-hover:text-blue-500 group-focus:text-blue-500 transition-colors duration-200" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M2 5.27L3.28 4L5 5.72l.28.28l1 1l2 2L16 16.72l2 2l2 2L18.73 22l-1.46-1.46c-.34.29-.77.46-1.27.46H8c-1.1 0-2-.9-2-2V9.27zM8 19h7.73L8 11.27zM18 7v9.18l-2-2V9h-5.18l-2-2zm-2.5-3H19v2H7.82l-2-2H8.5l1-1h5z"/>
+                </svg>
+                <span class="text-[13px] font-normal tracking-wide group-hover:text-gray-800 transition-colors duration-200">Очистить корзину</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+{% include 'cart/modals/cart_clear.html' %}
+
+<script>
+    function checkPromoInput(inputElement) {
+        const button = document.getElementById('promo-button');
+        const icon = document.getElementById('promo-icon');
+        if (inputElement.value.trim().length > 0) {
+            button.disabled = false;
+            icon.classList.remove('text-gray-400');
+            icon.classList.add('text-blue-600');
+        } else {
+            button.disabled = true;
+            icon.classList.remove('text-blue-600');
+            icon.classList.add('text-gray-400');
+        }
+    }
+</script>

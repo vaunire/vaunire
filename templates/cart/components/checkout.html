@@ -1,0 +1,203 @@
+{% load static humanize %}
+
+<style>
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100%; opacity: 0; cursor: pointer;
+    }
+    textarea::-webkit-scrollbar { width: 6px; }
+    textarea::-webkit-scrollbar-track { background: transparent; }
+    textarea::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+    #map {
+        height: 400px; width: 100%; background-color: #f9fafb; border-radius: 0.5rem;
+    }
+</style>
+
+<div class="font-montserrat tracking-wide">
+<div class="flex items-center tracking-wide font-montserrat justify-between">
+    <h3 class="text-lg font-bold text-black relative inline-block">Оформление заказа</h3>
+</div>
+ <p class="text-sm text-gray-500 mt-1 leading-relaxed">
+        Заполните форму ниже, чтобы завершить оформление заказа. Мы свяжемся с вами для подтверждения.
+    </p>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 relative -mt-2 transition-shadow hover:shadow-md font-montserrat tracking-wide">
+    <form method="POST" action="{% url 'order' %}" id="order-form">
+        {% csrf_token %}
+        <div class="px-8 pt-6 pb-3 space-y-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                    <label for="{{ form.first_name.id_for_label }}" class="flex items-center text-sm font-normal text-black">
+                        <svg class="text-blue-600 mr-2 opacity-75" xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"><path d="M15 11h7v2h-7zm1 4h6v2h-6zm-2-8h8v2h-8zM4 19h10v-1c0-2.757-2.243-5-5-5H7c-2.757 0-5 2.243-5 5v1h2zm4-7c1.995 0 3.5-1.505 3.5-3.5S9.995 5 8 5S4.5 6.505 4.5 8.5S6.005 12 8 12z" fill="currentColor"/></svg>
+                        Имя
+                    </label>
+                    <input type="text" name="first_name" id="{{ form.first_name.id_for_label }}" 
+                           value="{% if form.first_name.value %}{{ form.first_name.value }}{% elif user.first_name %}{{ user.first_name }}{% endif %}"
+                           class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-black placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+                           placeholder="Введите имя" required>
+                </div>
+                <div class="space-y-1.5">
+                    <label for="{{ form.last_name.id_for_label }}" class="flex items-center text-sm font-normal text-black">
+                        <svg class="text-blue-600 mr-2 opacity-75" xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"><path d="M15 11h7v2h-7zm1 4h6v2h-6zm-2-8h8v2h-8zM4 19h10v-1c0-2.757-2.243-5-5-5H7c-2.757 0-5 2.243-5 5v1h2zm4-7c1.995 0 3.5-1.505 3.5-3.5S9.995 5 8 5S4.5 6.505 4.5 8.5S6.005 12 8 12z" fill="currentColor"/></svg>
+                        Фамилия
+                    </label>
+                    <input type="text" name="last_name" id="{{ form.last_name.id_for_label }}" 
+                           value="{% if form.last_name.value %}{{ form.last_name.value }}{% elif user.last_name %}{{ user.last_name }}{% endif %}"
+                           class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-black placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+                           placeholder="Введите фамилию" required>
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="{{ form.phone.id_for_label }}" class="flex items-center text-sm font-normal text-black">
+                    <svg class="text-blue-600 mr-1.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"><path d="M20.487 17.14l-4.065-3.696a1.001 1.001 0 0 0-1.391.043l-2.393 2.461c-.576-.11-1.734-.471-2.926-1.66c-1.192-1.193-1.553-2.354-1.66-2.926l2.459-2.394a1 1 0 0 0 .043-1.391L6.859 3.513a1 1 0 0 0-1.391-.087l-2.17 1.861a1 1 0 0 0-.29.649c-.015.25-.301 6.172 4.291 10.766C11.305 20.707 16.323 21 17.705 21c.202 0 .326-.006.359-.008a.992.992 0 0 0 .648-.291l1.86-2.171a.997.997 0 0 0-.085-1.39z" fill="currentColor"/></svg>
+                    Телефон
+                </label>
+                <input type="tel" name="phone" id="{{ form.phone.id_for_label }}" 
+                       value="{% if form.phone.value %}{{ form.phone.value }}{% elif user.customer.phone %}{{ user.customer.phone }}{% endif %}"
+                       class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-black placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+                       placeholder="+7 (___) ___-__-__" required>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                    <label for="id_buying_type" class="flex items-center text-sm font-normal text-black">
+                        <svg class="text-blue-600 mr-1.5 opacity-80" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="m.5 13.325l.5-2h5.5l-.5 2zM7 20q-1.25 0-2.125-.875T4 17H1.5l.5-2.175h5.175l.9-3.65h2.1l1.25-5H4.5l.15-.6q.15-.7.688-1.137T6.6 4H18l-.925 4H20l3 4l-1 5h-2q0 1.25-.875 2.125T17 20t-2.125-.875T14 17h-4q0 1.25-.875 2.125T7 20M2.5 9.675l.5-2h6.5l-.5 2zM7 18q.425 0 .713-.288T8 17t-.288-.712T7 16t-.712.288T6 17t.288.713T7 18m10 0q.425 0 .713-.288T18 17t-.288-.712T17 16t-.712.288T16 17t.288.713T17 18m-1.075-5h4.825l.1-.525L19 10h-2.375z"/></svg>
+                        Способ получения
+                    </label>
+                    <div class="relative">
+                        <select name="buying_type" id="id_buying_type"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-black appearance-none focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 cursor-pointer" required>
+                            <option value="delivery" {% if form.buying_type.value == 'delivery' or not form.buying_type.value %}selected{% endif %}>Курьерская доставка</option>
+                            <option value="self" {% if form.buying_type.value == 'self' %}selected{% endif %}>Самовывоз</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="id_order_date" class="flex items-center text-sm font-normal text-black">
+                        <svg class="text-blue-600 mr-2 opacity-75" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><g fill="none"><path fill="currentColor" d="M2 9c0-1.886 0-2.828.586-3.414C3.172 5 4.114 5 6 5h12c1.886 0 2.828 0 3.414.586C22 6.172 22 7.114 22 9c0 .471 0 .707-.146.854C21.707 10 21.47 10 21 10H3c-.471 0-.707 0-.854-.146C2 9.707 2 9.47 2 9m0 9c0 1.886 0 2.828.586 3.414C3.172 22 4.114 22 6 22h12c1.886 0 2.828 0 3.414-.586C22 20.828 22 19.886 22 18v-5c0-.471 0-.707-.146-.854C21.707 12 21.47 12 21 12H3c-.471 0-.707 0-.854.146C2 12.293 2 12.53 2 13z"/><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M7 3v3m10-3v3"/></g></svg>
+                        Дата получения
+                    </label>
+                    <div class="relative w-full group">
+                        <div class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm flex items-center justify-between transition-all duration-200 group-focus-within:border-blue-500 group-focus-within:ring-1 group-focus-within:ring-blue-500">
+                            <span id="date-text" class="text-gray-400">Выберите дату</span>
+                            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <input type="date" name="order_date" id="id_order_date"
+                               min="{% now 'Y-m-d' %}"
+                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                               required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <div class="flex justify-between items-end">
+                    <label class="flex items-center text-sm font-normal text-black">
+                        <svg class="text-blue-600 mr-1.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C7.589 2 4 5.589 4 9.995C3.971 16.44 11.696 21.784 12 22c0 0 8.029-5.56 8-12c0-4.411-3.589-8-8-8zm0 12c-2.21 0-4-1.79-4-4s1.79-4 4-4s4 1.79 4 4s-1.79 4-4 4z" fill="currentColor"/></svg>
+                        Адрес доставки
+                    </label>
+                    <span class="text-[11px] text-gray-600 -mb-0.5 font-normal" id="address-status">Укажите на карте</span>
+                </div>
+                
+                <div class="relative border border-gray-200 rounded-lg overflow-hidden">
+                    <div id="map"></div>
+                    <div class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-4 py-3">
+                         <div class="flex items-start gap-3">
+                             <svg class="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                             <div>
+                                 <p class="text-xs text-gray-500 font-normal uppercase tracking-widest mb-1">Выбранный адрес</p>
+                                 <p id="address-text" class="text-sm font-normal text-black leading-tight">
+                                    {% if form.address.value %}{{ form.address.value }}
+                                    {% elif user.customer.address %}{{ user.customer.address }}
+                                    {% else %}Адрес не выбран{% endif %}
+                                 </p>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+                <input type="hidden" id="address" name="address" 
+                       value="{% if form.address.value %}{{ form.address.value }}{% elif user.customer.address %}{{ user.customer.address }}{% endif %}">
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="{{ form.comment.id_for_label }}" class="flex items-center text-sm font-normal text-black">
+                    <svg class="text-blue-600 mr-2 opacity-75" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M19 10a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3v.966c0 1.06-1.236 1.639-2.05.96L14.638 19H12a3 3 0 0 1-3-3v-3a3 3 0 0 1 3-3zm-3-6a3 3 0 0 1 3 3v1h-8a4 4 0 0 0-4 4v4c0 1.044.4 1.996 1.056 2.708L7 19.5c-.824.618-2 .03-2-1V17a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/></svg>
+                    Комментарий
+                </label>
+                <textarea name="comment" id="{{ form.comment.id_for_label }}"
+                          class="w-full px-4 py-1.5 bg-white border font-normal border-gray-200 resize-none rounded-lg text-[13px] text-black placeholder-gray-500/65 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+                          placeholder="Дополнительная информация (подъезд, этаж, код домофона)..." rows="3">{{ form.comment.value|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <div class="w-full h-px bg-gray-100"></div>
+
+        <div class="px-8 py-4 bg-gray-50/30 rounded-b-lg">
+            <div class="flex items-center mb-3.5">
+                <input type="checkbox" id="agreement" name="agreement" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" required>
+                <label for="agreement" class="ml-2.5 text-[13px] text-gray-600 cursor-pointer leading-tight">
+                    Я согласен с условиями <a href="#" class="text-blue-600 hover:text-blue-700 transition-colors">обработки данных</a> и оферты
+                </label>
+            </div>
+
+            <button type="submit" class="w-full mb-1.5 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium tracking-wide rounded-lg shadow-sm hover:shadow transition-all duration-200 flex justify-center items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M10.591 2.513a3.75 3.75 0 0 1 2.818 0l7.498 3.04A1.75 1.75 0 0 1 22 7.175v5.635a6.5 6.5 0 0 0-1.5-1.077v-3.96l-7.75 2.992v2.298a6.5 6.5 0 0 0-1.5 2.645v-4.944L3.5 7.75v9.078a.25.25 0 0 0 .156.231l7.499 3.04q.047.02.095.036l.189.076q.088.036.179.06c.248.526.565 1.014.94 1.451a3.75 3.75 0 0 1-1.967-.233l-7.498-3.04A1.75 1.75 0 0 1 2 16.827V7.176a1.75 1.75 0 0 1 1.093-1.622zm2.254 1.39a2.25 2.25 0 0 0-1.69 0L9.24 4.68l7.527 2.927l2.67-1.03zM4.59 6.564l7.411 2.883l2.69-1.04L7.216 5.5zM17.5 23.001a5.5 5.5 0 1 0 0-11a5.5 5.5 0 0 0 0 11m-1-4.207l3.646-3.647a.5.5 0 0 1 .708.707l-4 4a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.707z"/></svg>
+                <span>Подтвердить заказ</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Если файл map.js уже загружен, запускаем инициализацию.
+    // Если еще нет (маловероятно, но вдруг), HTMX listener в map.js подхватит сам.
+    if (typeof window.initMapLogic === 'function') {
+        window.initMapLogic();
+    }
+    
+    // Скрипт для даты (оставляем инлайн, так как он простой и привязан к конкретным ID)
+    (function() {
+        const dateInput = document.getElementById('id_order_date');
+        const dateText = document.getElementById('date-text');
+        if(!dateInput || !dateText) return;
+
+        function formatDate(isoDate) {
+            if (!isoDate) return null;
+            const parts = isoDate.split('-');
+            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+
+        function syncDisplay() {
+            const val = dateInput.value;
+            if (val) {
+                const formatted = formatDate(val);
+                if (dateText.textContent !== formatted) {
+                    dateText.textContent = formatted;
+                    dateText.classList.remove('text-gray-400');
+                    dateText.classList.add('text-black');
+                }
+            } else {
+                if (dateText.textContent !== 'Выберите дату') {
+                    dateText.textContent = 'Выберите дату';
+                    dateText.classList.add('text-gray-400');
+                    dateText.classList.remove('text-black');
+                }
+            }
+        }
+
+        dateInput.addEventListener('input', syncDisplay);
+        dateInput.addEventListener('change', syncDisplay);
+        // Запуск один раз
+        syncDisplay();
+    })();
+</script>

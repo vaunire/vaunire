@@ -1,0 +1,146 @@
+{% load humanize %}
+{% load static %}
+
+<div class="card col-span-full tracking-wide lg:col-span-2 group relative font-montserrat flex bg-white rounded-xl border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-xl overflow-hidden h-[155px]">
+
+    <div class="relative w-[160px] shrink-0 bg-gray-50">
+
+        <div class="relative w-full h-full cursor-pointer" 
+             data-carousel 
+             data-images='[{% if album.image.url %}"{{ album.image.url }}"{% else %}"{% static 'images/placeholder.jpg' %}"{% endif %}{% for image in album.image_gallery.all|slice:":9" %}{% if image.image.url %}, "{{ image.image.url }}"{% endif %}{% endfor %}]'
+             data-total-images="{% with gallery_length=album.image_gallery.all|length|default:0 %}{{ gallery_length|add:1 }}{% endwith %}">
+
+            <img src="{{ album.image.url|default:'/static/images/placeholder.jpg' }}" 
+                 alt="{{ album.name }}"
+                 class="absolute w-full h-full object-cover z-10" 
+                 data-carousel-image="0">
+
+            {% if album.offer_of_the_week %}
+            <div class="absolute bottom-1.5 right-2.5 z-20 flex items-center justify-center transition-transform" title="Хит месяца">
+                <svg class="w-5 h-5 -mr-0.5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            {% endif %}
+
+            <div class="absolute top-2 left-2 z-20 flex items-center gap-1.5">
+                
+                {% if album.condition %}
+                <span class="inline-flex items-center justify-center w-[30px] h-[22px] font-montserrat font-medium rounded-md text-[9px] bg-white text-black shadow-sm" 
+                      title="Состояние: {{ album.condition }}">
+                    {{ album.condition|truncatechars:2|upper }}
+                </span>
+                {% endif %}
+
+                {% if album.has_autograph %}
+                <span class="inline-flex items-center justify-center w-[30px] h-[22px] font-montserrat font-medium rounded-md text-[9px] bg-white text-black shadow-sm border border-purple-500" 
+                      title="С автографом">
+                    <svg class="signature-icon w-3.5 h-3.5 mt-1 ml-0.5 text-purple-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 576" fill="currentColor">
+                        <path d="M623.2 128c-51.8 3.5-125.7 54.7-163.1 71.5-29.1 13.1-54.2 24.4-76.1 24.4-22.6 0-26-16.2-21.3-51.9 1.1-8 11.7-79.2-42.7-76.1-25.1 1.5-64.3 24.8-169.5 126L192 118.2c30.4-75.9-53.2-151.5-129.7-102.8L7.4 52.3C0 57-2.2 66.9 2.5 74.4l17.2 27c4.7 7.5 14.6 9.7 22.1 4.9l58-38.9c18.4-11.7 40.7 7.2 32.7 27.1L34.3 340.1C27.5 357 37 384 64 384c8.3 0 16.5-3.2 22.6-9.4 42.2-42.2 154.7-150.7 211.2-195.8-2.2 28.5-2.1 58.9 20.6 83.8 15.3 16.8 37.3 25.3 65.5 25.3 35.6 0 68-14.6 102.3-30 33-14.8 99-62.6 138.4-65.8 8.5-.7 15.2-7.3 15.2-15.8v-32.1c.2-9.1-7.5-16.8-16.6-16.2z" />
+                    </svg>
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="absolute bottom-2.5 left-0 right-0 flex justify-center space-x-1.5 z-30" data-carousel-dots>
+                {% with gallery_length=album.image_gallery.all|length|default:0|add:1 %}
+                    {% for i in "x"|ljust:gallery_length %}
+                        <button class="w-1.5 h-1.5 rounded-full transition-colors cursor-pointer hover:bg-black {% if forloop.first %}bg-black{% else %}bg-black/20{% endif %}"
+                                data-dot-index="{{ forloop.counter0 }}">
+                        </button>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-1 p-4 flex flex-col h-full relative">
+
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-start gap-2 -mt-0.5">
+                
+                {% if album.annotated_discount_percentage > 0 %}
+                <div class="absolute top-0 right-0 w-24 h-24 overflow-hidden z-20 pointer-events-none">
+                    <span class="absolute -top-7 -right-10 bg-blue-500 text-white text-xs font-geologica font-semibold px-9 py-1 transform rotate-45 origin-bottom-left shadow-md">
+                        Скидка
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="pr-8 min-w-0">
+                    <h5 class="text-[13px] font-normal text-gray-600 truncate">
+                        <a href="{{ album.artist.get_absolute_url }}" class="hover:text-blue-600 transition-colors">
+                            {{ album.artist.name }}
+                        </a>
+                    </h5>
+                    <h3 class="text-[15px] font-semibold text-black leading-tight line-clamp-2 hover:text-blue-600 transition-colors">
+                        <a href="{{ album.get_absolute_url }}">
+                            {{ album.name }}
+                            {% if album.is_explicit %}
+                            <span title="Нецензурная лексика" class="ml-3 px-2 py-0.5 text-xs text-white bg-gray-600 rounded-md font-medium tracking-wider select-none">
+                                E
+                            </span>
+                            {% endif %}
+                        </a>
+                    </h3>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1 mt-2 mb-2.5">
+                <div class="shrink-0 text-gray-400/60">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                    </svg>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5">
+                    {% for style in album.styles.all|slice:":3" %}
+                    <span class="text-[10px] font-normal px-2.5 py-[3px] bg-white border border-gray-100 text-gray-800 rounded-lg shadow-soft whitespace-nowrap cursor-default transition-colors duration-200 hover:bg-gray-100/50">
+                        {{ style.name }}
+                    </span>
+                    {% endfor %}
+
+                    {% if album.styles.all|length > 3 %}
+                    <span class="text-[10px] font-normal px-2.5 py-[3px] bg-white border border-gray-100 text-gray-800 rounded-lg shadow-soft whitespace-nowrap cursor-help transition-colors duration-200 hover:bg-gray-100/50"
+                          title="Ещё {{ album.styles.all|length|add:"-3" }} стилей">
+                        +{{ album.styles.all|length|add:"-3" }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-auto flex items-end justify-between pt-1">
+
+            <div class="flex flex-col tracking-wider">
+                
+                {% if album.stock %}
+                <div class="flex items-center gap-1.5">
+                    <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    <span class="text-[10px] font-medium text-gray-600">В наличии</span>
+                </div>
+                {% else %}
+                <div class="flex items-center gap-1.5">
+                    <div class="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+                    <span class="text-[10px] font-medium text-gray-600">Нет в наличии</span>
+                </div>
+                {% endif %}
+
+                <div class="flex items-center gap-2">
+                    {% if album.annotated_discount_percentage > 0 %}
+                        <span class="text-lg font-semibold text-black">{{ album.annotated_discounted_price|floatformat:0|intcomma }} ₽</span>
+                        <span class="text-xs text-gray-300 line-through decoration-gray-300">
+                            {{ album.annotated_current_price|floatformat:0|intcomma }} ₽
+                        </span>
+                    {% else %}
+                        <span class="text-lg font-semibold text-black">{{ album.annotated_current_price|floatformat:0|intcomma }} ₽</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1 pb-1">
+                {% include 'partials/catalog/cards/actions.html' %}
+            </div>
+        </div>
+    </div>
+</div>

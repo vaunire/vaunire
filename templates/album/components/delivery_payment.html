@@ -1,0 +1,45 @@
+{% load static %}
+<div class="space-y-4 mt-6">
+    <!-- Доставка -->
+    <div>
+        <h4 class="font-semibold text-black mb-2">Способы доставки</h4>
+        <div class="space-y-4">
+            <!-- CDEK -->
+            <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100 p-1.5">
+                    <img src="{% static 'images/icons/cdek.png' %}" alt="CDEK" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <p class="text-sm font-normal text-black">Пункт выдачи, курьер – от 200 ₽</p>
+                    <p class="text-[13px] text-gray-500 mt-0.5">при заказе от 6 000 ₽ – бесплатно</p>
+                </div>
+            </div>
+            <!-- Почта -->
+            <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100 p-1.5">
+                    <img src="{% static 'images/icons/pochta.png' %}" alt="Почта" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <p class="text-sm font-normal text-black">Почта России – от 250 ₽</p>
+                    <p class="text-[13px] text-gray-500 mt-0.5">при заказе от 6 000 ₽ – бесплатно</p>
+                </div>
+            </div>
+            <!-- Самовывоз -->
+             <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100 p-2 rotate-180">
+                    <img src="{% static 'images/logo/favicon.svg' %}" alt="Почта" class="w-full h-full object-contain opacity-90">
+                </div>
+                <div class="flex items-center h-10">
+                    <p class="text-sm font-normal text-black">Самовывоз – бесплатно</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Оплата -->
+    <div>
+        <h4 class="font-semibold text-black mb-1.5">Способы оплаты</h4>
+        <div class="flex items-center gap-2 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1 w-max">
+            <span class="font-bold text-[#635BFF] tracking-tight">Stripe</span>
+        </div>
+    </div>
+</div>

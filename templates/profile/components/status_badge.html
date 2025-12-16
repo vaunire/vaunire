@@ -1,0 +1,12 @@
+<span class="inline-flex items-center px-2.5 py-[3px] text-xs font-medium rounded-md border
+    {% if status == 'completed' or status == 'paid' or status == 'approved' or status == 'success' %}
+        bg-green-50 text-green-700 border-green-200
+    {% elif status == 'in_progress' or status == 'pending' or status == 'confirmed' %}
+        bg-blue-50 text-blue-700 border-blue-200
+    {% elif status == 'canceled' or status == 'rejected' %}
+        bg-red-50 text-red-700 border-red-200
+    {% else %}
+        bg-gray-100 text-gray-600 border-gray-200
+    {% endif %}">
+    {{ text }}
+</span>

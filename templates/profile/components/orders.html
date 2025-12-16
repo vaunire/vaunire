@@ -1,0 +1,183 @@
+{% load humanize %}
+{% load static %}
+
+<div id="orders" 
+     class="tab-pane" 
+     x-show="activeTab === 'orders'"
+     style="display: none;" 
+     x-data="{ 
+        expanded: false,
+
+        // Переход к возврату с сохранением ID заказа в URL
+        goToReturn(orderId) {
+            if (typeof this.switchTab === 'function') {
+                this.switchTab('returns');
+            } else {
+                this.activeTab = 'returns';
+            }
+
+            // 2. Добавляем параметр order_id в URL
+            const url = new URL(window.location);
+            url.searchParams.set('order_id', orderId);
+            history.replaceState({}, '', url);
+
+            // 3. Запускаем скролл (если функция доступна)
+            if (typeof this.checkOrderHighlight === 'function') {
+                this.checkOrderHighlight();
+            }
+        }
+     }">
+    
+    <div class="bg-white p-3 min-h-[400px]">
+        <!-- Заголовок секции -->
+        <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-3">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Ваши заказы ({{ orders_with_status|length }})</h2>
+            </div>
+        </div>
+
+        <!-- Список заказов -->
+        <div class="space-y-3 min-h-[400px] pr-2">
+            
+            <!-- Кнопка 'Скрыть' -->
+            <div class="flex justify-end" x-show="expanded" x-cloak>
+                <button @click="expanded = false" class="text-gray-600 text-xs hover:text-gray-800 uppercase transition-colors duration-200">
+                    Скрыть
+                </button>
+            </div>
+
+            {% if orders_with_status %}
+                {% for item in orders_with_status %}
+                    {% with order=item.order %}
+                    
+                    <!-- Карточка заказа -->
+                    <div class="order-item bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-3 px-7 flex flex-col relative"
+                         x-show="expanded || {{ forloop.counter0 }} < 4">
+                        
+                        <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
+                            <div class="w-[95px] flex flex-col gap-1">
+                                <span class="block text-xs font-normal text-gray-500">Номер заказа</span>
+                                <span class="text-black text-sm">{{ order.id }}</span>
+                            </div>
+                            <div class="w-[100px] flex flex-col -ml-1 gap-1">
+                                <span class="block text-xs font-normal text-gray-500">Дата</span>
+                                <span class="text-black text-sm">{{ order.created_at|date:"d.m.Y" }}</span>
+                            </div>
+                            <div class="w-[100px] flex flex-col gap-1">
+                                <span class="block text-xs font-normal text-gray-500">Тип доставки</span>
+                                <span class="text-black text-sm">{{ order.get_buying_type_display }}</span>
+                            </div>
+                            <div class="w-[150px]">
+                                <span class="text-xs font-normal text-gray-500">Статус заказа:</span>
+                                    {% include 'profile/components/status_badge.html' with status=order.status text=order.get_status_display %}
+                            </div>
+                            
+                            <div class="flex items-center gap-4 w-[185px]">
+                                <div class="w-[120px] flex flex-col gap-1">
+                                    <span class="block text-xs font-normal text-gray-500">Сумма</span>
+                                    <span class="text-black font-medium text-sm">
+                                        {{ order.cart.final_price|floatformat:0|default:'0'|intcomma }} ₽
+                                    </span>
+                                </div>
+                                <div class="flex gap-3">
+                                    <!-- Кнопка: Детали заказа -->
+                                    <button @click="$dispatch('open-modal-details-{{ order.id }}')" 
+                                            class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 transition-all duration-300 hover:scale-105" 
+                                            title="Посмотреть детали заказа">
+                                        <svg class="w-4 h-4 opacity-80 hover:text-blue-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/>
+                                        </svg>
+                                    </button>
+                                    
+                                    <!-- Кнопка: Возврат (активная/неактивная) -->
+                                    {% if item.has_pending_return or item.has_approved_return or order.status == 'canceled' or order.status != 'completed' %}
+                                        <button class="p-1 bg-gray-100 text-gray-300 rounded-md cursor-not-allowed" disabled>
+                                            <svg class="text-gray-400 opacity-80" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 1200 1200">
+                                                <path fill="currentColor" d="M300 225L0 525h225v375h450L525 750H375V525h225zm225 75l150 150h150v225H600l300 300l300-300H975V300z"/>
+                                            </svg>
+                                        </button>
+                                    {% else %}
+                                        <button @click="$dispatch('open-modal-return-{{ order.id }}')" 
+                                                class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 transition-all duration-300 hover:scale-105" 
+                                                title="Запросить возврат">
+                                            <svg class="text-gray-400 opacity-80 hover:text-blue-700" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 1200 1200">
+                                                <path fill="currentColor" d="M300 225L0 525h225v375h450L525 750H375V525h225zm225 75l150 150h150v225H600l300 300l300-300H975V300z"/>
+                                            </svg>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Оверлеи статусов (переходы к возвратам) -->
+                        {% if item.has_pending_return %}
+                            <div class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 rounded-xl">
+                                <button @click="goToReturn({{ item.order.id }})" 
+                                        class="flex items-center gap-[5px] text-[13px] font-medium ring-1 ring-blue-600 text-blue-700 bg-white px-4 py-1.5 rounded-md shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                    <svg class="w-3 h-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    <span>Возврат запрошен</span>
+                                </button>
+                            </div>
+                        {% elif item.has_approved_return %}
+                            <div class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 rounded-xl">
+                                <button @click="goToReturn({{ item.order.id }})" 
+                                        class="flex items-center gap-1.5 text-[13px] font-medium ring-1 ring-green-600 text-green-600 bg-white px-4 py-1.5 rounded-md shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                    <svg class="w-3 h-3 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    <span>Возврат одобрен</span>
+                                </button>
+                            </div>
+                        {% elif item.has_canceled_return %}
+                            <div class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 rounded-xl">
+                                <button @click="goToReturn({{ item.order.id }})" 
+                                        class="flex items-center gap-1.5 text-[13px] font-medium ring-1 ring-red-600 text-red-600 bg-white px-4 py-1.5 rounded-md shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                    <svg class="w-3 h-3 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    <span>Возврат отменен</span>
+                                </button>
+                            </div>
+                        {% elif item.has_paid_return %}
+                            <div class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 rounded-xl">
+                                <button @click="goToReturn({{ item.order.id }})" 
+                                        class="flex items-center gap-2 text-[13px] font-medium ring-1 ring-green-600 text-green-600 bg-white px-4 py-1.5 rounded-md shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                    <svg class="w-3 h-3 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    <span>Возврат выплачен</span>
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Подключение модалок -->
+                    {% include 'profile/modals/order_details.html' %}
+                    {% include 'profile/modals/return_request.html' %}
+                    
+                    {% endwith %}
+                {% endfor %}
+
+                <!-- Кнопка "Показать все" -->
+                {% if orders_with_status|length > 4 %}
+                    <div class="text-center mt-4" x-show="!expanded">
+                        <button @click="expanded = true" class="text-blue-600 text-[13px] hover:text-blue-800 transition-colors duration-200">
+                            Показать все
+                        </button>
+                    </div>
+                {% endif %}
+            
+            {% else %}
+                <!-- Пустое состояние -->
+                <div class="text-center py-12">
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.73 22.73L2.77 2.77L2 2l-.73-.73L0 2.54l4.39 4.39l2.21 4.66l-1.35 2.45c-.16.28-.25.61-.25.96c0 1.1.9 2 2 2h7.46l1.38 1.38A1.997 1.997 0 0 0 17 22c.67 0 1.26-.33 1.62-.84L21.46 24zM7.42 15c-.14 0-.25-.11-.25-.25l.03-.12l.9-1.63h2.36l2 2zm8.13-2c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H6.54zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2s-.9-2-2-2"/>
+                    </svg>
+                    <p class="text-base font-light text-gray-600">У Вас пока нет заказов</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

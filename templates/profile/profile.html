@@ -1,0 +1,142 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+<title>{% block title %}Личный кабинет | Vaunire{% endblock %}</title>
+
+{% block content %}
+<body class="bg-gray-50">
+    <script src="{% static 'js/tabs.js' %}"></script>
+
+    <div class="max-w-[1330px] mx-auto px-4 py-4" x-data="profileTabs">
+        
+        <!-- Хлебные крошки -->
+        <nav class="flex mb-3 text-xs px-2" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1">
+                <li class="inline-flex items-center">
+                    <a href="/" class="text-black hover:text-blue-600 transition-colors duration-300">Главная</a>
+                </li>
+                <li class="inline-flex items-center gap-1">
+                    <svg class="w-3 h-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.4" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                    <a href="{% url 'account' %}" class="text-black hover:text-blue-600 transition-colors duration-300">Личный кабинет</a>
+                </li>
+                <li class="inline-flex items-center gap-1">
+                    <svg class="w-3 h-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.4" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                    <span id="breadcrumb-last" class="text-gray-500">Данные аккаунта</span>
+                </li>
+            </ol>
+        </nav>
+
+        {% include 'core/messages.html' %}
+
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden mb-36">
+            <div class="flex flex-col md:flex-row min-h-[600px]">
+                
+                <!-- Левая панель -->
+                <div class="w-full md:w-80 flex-shrink-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 border-r border-gray-200/50 p-6">
+                    <div class="flex flex-col gap-4 sticky top-6">
+                        <nav class="flex flex-col space-y-1" aria-label="Tabs">
+                            
+                            <!-- 1. Аккаунт -->
+                            <button @click="switchTab('account')" 
+                                    class="group flex items-center w-full py-3 px-5 text-[13px] font-medium transition-all duration-200 border-l-[3px]"
+                                    :class="isActive('account') 
+                                        ? 'border-blue-600 bg-gradient-to-r from-blue-50 to-transparent text-blue-700' 
+                                        : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+                                
+                                <svg class="mr-3 w-5 h-5 -ml-[1px] transition-colors duration-200" 
+                                    :class="isActive('account') ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'"
+                                    fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M7.995 2C6.154 2 4.662 3.465 4.662 5.273c0 1.807 1.492 3.272 3.333 3.272 1.84 0 3.332-1.465 3.332-3.272C11.327 3.465 9.835 2 7.995 2M5.161 9.262c.424-.17.889-.043 1.319.11a4.6 4.6 0 0 0 1.515.264c.518 0 1.031-.095 1.504-.26c.437-.153.909-.279 1.337-.105c.73.297 1.551.899 2.02 1.616a.876.876 0 0 1-.082 1.067C11.65 13.216 9.811 14 7.994 14s-3.643-.782-4.768-2.045a.88.88 0 0 1-.083-1.068c.471-.722 1.285-1.332 2.018-1.625"/>
+                                </svg>
+                                Данные аккаунта
+                            </button>
+
+                            <!-- 2. Заказы -->
+                            <button @click="switchTab('orders')" 
+                                    class="group flex items-center w-full py-3 px-5 text-[13px] font-medium transition-all duration-200 border-l-[3px]"
+                                    :class="isActive('orders') 
+                                        ? 'border-blue-600 bg-gradient-to-r from-blue-50 to-transparent text-blue-700' 
+                                        : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+                                
+                                <svg class="mr-3 w-[18px] h-[18px] transition-colors duration-200"
+                                    :class="isActive('orders') ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'"
+                                    fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M13.409 2.513a3.75 3.75 0 0 0-2.818 0l-2.19.888l9.592 3.73l3.374-1.303a1.8 1.8 0 0 0-.46-.275zM22 7.191l-9.25 3.574v10.923q.336-.068.659-.199l7.498-3.04A1.75 1.75 0 0 0 22 16.827zM11.25 21.688V10.765L2 7.191v9.637a1.75 1.75 0 0 0 1.093 1.621l7.498 3.04q.323.13.659.2M2.633 5.828L12 9.447l3.917-1.514l-9.543-3.71l-3.281 1.33q-.256.104-.46.275"/>
+                                </svg>
+                                <span class="flex-1 text-left">Мои заказы</span>
+                                <span class="ml-2 py-0.5 px-2 rounded-md text-[10px] font-semibold"
+                                    :class="isActive('orders') ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'">
+                                    {{ orders_with_status|length }}
+                                </span>
+                            </button>
+
+                            <!-- 3. Вишлист -->
+                            <button @click="switchTab('wishlist')" 
+                                    class="group flex items-center w-full py-3 px-5 text-[13px] font-medium transition-all duration-200 border-l-[3px]"
+                                    :class="isActive('wishlist') 
+                                        ? 'border-blue-600 bg-gradient-to-r from-blue-50 to-transparent text-blue-700' 
+                                        : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+                                
+                                <svg class="mr-3 w-[18px] h-[18px] transition-colors duration-200"
+                                    :class="isActive('wishlist') ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'"
+                                    fill="currentColor" viewBox="0 0 1024 1024">
+                                    <path d="m908.1 353.1l-253.9-36.9L540.7 86.1c-3.1-6.3-8.2-11.4-14.5-14.5c-15.8-7.8-35-1.3-42.9 14.5L369.8 316.2l-253.9 36.9c-7 1-13.4 4.3-18.3 9.3a32.05 32.05 0 0 0 .6 45.3l183.7 179.1l-43.4 252.9a31.95 31.95 0 0 0 46.4 33.7L512 754l227.1 119.4c6.2 3.3 13.4 4.4 20.3 3.2c17.4-3 29.1-19.5 26.1-36.9l-43.4-252.9l183.7-179.1c5-4.9 8.3-11.3 9.3-18.3c2.7-17.5-9.5-33.7-27-36.3"/>
+                                </svg>
+                                Лист ожидания
+                            </button>
+
+                            <!-- 4. Возвраты -->
+                            <button @click="switchTab('returns')" 
+                                    class="group flex items-center w-full py-3 px-5 text-[13px] font-medium transition-all duration-200 border-l-[3px]"
+                                    :class="isActive('returns') 
+                                        ? 'border-blue-600 bg-gradient-to-r from-blue-50 to-transparent text-blue-700' 
+                                        : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+                                
+                                <svg class="mr-3 w-[18px] h-[18px] transition-colors duration-200"
+                                    :class="isActive('returns') ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'"
+                                    fill="currentColor" viewBox="0 0 1200 1200">
+                                    <path d="M300 225L0 525h225v375h450L525 750H375V525h225zm225 75l150 150h150v225H600l300 300l300-300H975V300z"/>
+                                </svg>
+                                <span class="flex-1 text-left">Мои возвраты</span>
+                                {% if customer.return_requests.count > 0 %}
+                                <span class="ml-2 py-0.5 px-2 rounded-md text-[10px] font-semibold"
+                                    :class="isActive('returns') ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'">
+                                    {{ customer.return_requests.count }}
+                                </span>
+                                {% endif %}
+                            </button>
+                        </nav>
+                        
+                        <!-- Блок со скидкой -->
+                        <div class="mt-44">
+                            {% include 'profile/components/discount.html' %}
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Правая панель с контентом -->
+                <div class="flex-1 p-6 min-h-[400px]">
+                    <div x-show="isActive('account')" class="animate-fade-in">
+                        {% include 'profile/components/profile.html' %}
+                    </div>
+                    <div x-show="isActive('orders')" style="display: none;" class="animate-fade-in">
+                        {% include 'profile/components/orders.html' %}
+                    </div>
+                    <div x-show="isActive('wishlist')" style="display: none;" class="animate-fade-in">
+                        {% include 'profile/components/wishlist.html' %}
+                    </div>
+                    <div x-show="isActive('returns')" style="display: none;" class="animate-fade-in">
+                        {% include 'profile/components/returns.html' %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}

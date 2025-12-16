@@ -1,0 +1,160 @@
+<style>
+    @keyframes float-gentle {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(2deg); }
+    }
+    .animate-float {
+        animation: float-gentle 4s ease-in-out infinite;
+    }
+
+    @keyframes tada-shake {
+        0% { transform: scale(1); }
+        10%, 20% { transform: scale(0.9) rotate(-3deg); }
+        30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+        40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+        100% { transform: scale(1) rotate(0); }
+    }
+    .animate-shake {
+        animation: tada-shake 1s ease-in-out;
+    }
+    
+    .ticket-shape {
+        background: #ffffff;
+        -webkit-mask: 
+            radial-gradient(circle at 0 50%, transparent 12px, black 12.5px) top left / 51% 100% no-repeat,
+            radial-gradient(circle at 100% 50%, transparent 12px, black 12.5px) top right / 51% 100% no-repeat;
+        mask: 
+            radial-gradient(circle at 0 50%, transparent 12px, black 12.5px) top left / 51% 100% no-repeat,
+            radial-gradient(circle at 100% 50%, transparent 12px, black 12.5px) top right / 51% 100% no-repeat;
+    }
+</style>
+
+<div x-data="{ 
+        state: 'hidden', // hidden | gift | card | closed
+        copied: false,
+        shaking: false,
+
+        // Инициализация: проверяем, не скрыт ли промокод
+        init() {
+            const hiddenUntil = localStorage.getItem('promo_hidden_until');
+            const now = new Date().getTime();
+
+            if (hiddenUntil && now < parseInt(hiddenUntil)) {
+                this.state = 'closed';
+            } else {
+                // Небольшая задержка перед появлением подарка при загрузке
+                setTimeout(() => this.state = 'gift', 500);
+            }
+
+            // Таймер для тряски
+            setInterval(() => {
+                if(this.state === 'gift') {
+                    this.shaking = true;
+                    setTimeout(() => this.shaking = false, 1000);
+                }
+            }, 5000);
+        },
+
+        // Функция скрытия на N часов
+        hidePromo(hours = 2) {
+            const date = new Date();
+            date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
+            localStorage.setItem('promo_hidden_until', date.getTime());
+            this.state = 'closed';
+        },
+
+        // Логика копирования
+        copyCode() {
+            navigator.clipboard.writeText('VAUNIRE');
+            this.copied = true;
+            
+            // Ждем 2 секунды, чтобы юзер увидел галочку, потом закрываем и сохраняем
+            setTimeout(() => {
+                this.hidePromo(2); // Скрыть на 2 часа
+                this.copied = false; 
+            }, 2000);
+        }
+     }"
+     x-cloak
+     class="fixed right-6 bottom-6 z-50 flex flex-col items-end">
+
+    <div x-show="state === 'gift'"
+         @click="state = 'card'"
+         class="cursor-pointer group relative z-50"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-75">
+        
+        <!-- Обертка 1: Плавное парение (постоянное) -->
+        <div class="animate-float">
+            <!-- Обертка 2: Тряска (по таймеру) -->
+            <div class="text-[64px] leading-none drop-shadow-md transition-transform duration-300 hover:scale-110"
+                 :class="shaking ? 'animate-shake' : ''">
+                🎁
+            </div>
+        </div>
+        
+        <!-- Подсказка (привязана к анимации тряски) -->
+        <div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1.5 rounded-xl text-xs font-bold text-gray-700 shadow-lg border border-gray-100 whitespace-nowrap transition-all duration-300 pointer-events-none"
+             :class="(shaking || $el.parentElement.matches(':hover')) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'">
+            Жми сюда!
+            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45 border-r border-b border-gray-100"></div>
+        </div>
+    </div>
+
+
+    <!-- 2. Карточка с промокодом -->
+    <div x-show="state === 'card'"
+        x-transition:enter="transition ease-out duration-500 delay-100"
+        x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        x-transition:leave="transform transition ease-in duration-500"
+        x-transition:leave-start="translate-x-0 opacity-100"
+        x-transition:leave-end="translate-x-[150%] opacity-0"
+        class="relative z-40 drop-shadow-2xl">
+
+        <!-- Кнопка закрытия (белая, так как фон синий) -->
+        <button @click="hidePromo(2)" 
+                class="absolute -top-7 right-1.5 z-20 flex items-center gap-2 text-gray-400 hover:text-gray-500 transition-colors cursor-pointer py-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <!-- ТЕЛО БИЛЕТА ВАРИАНТ 1 -->
+        <div class="w-[360px] h-[130px] flex relative overflow-hidden rounded-xl bg-blue-600 text-white"
+            style="mask: radial-gradient(circle at 0 50%, transparent 10px, black 10.5px) top left / 51% 100% no-repeat,
+                        radial-gradient(circle at 100% 50%, transparent 10px, black 10.5px) top right / 51% 100% no-repeat;
+                    -webkit-mask: radial-gradient(circle at 0 50%, transparent 10px, black 10.5px) top left / 51% 100% no-repeat,
+                                radial-gradient(circle at 100% 50%, transparent 10px, black 10.5px) top right / 51% 100% no-repeat;">
+            
+            <!-- Левая часть (Белая) -->
+            <div class="w-[35%] bg-white text-gray-800 flex flex-col justify-center items-center relative z-10 pl-2">
+                <div class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Скидка</div>
+                <div class="text-4xl font-extrabold text-blue-600">10%</div>
+                <!-- Декор: штрихкод внизу -->
+                <div class="h-3 w-16 mt-3 opacity-30 bg-repeat-x" style="background-image: linear-gradient(to right, #000 30%, transparent 30%, transparent 40%, #000 40%, #000 60%, transparent 60%); background-size: 6px 100%;"></div>
+            </div>
+
+            <!-- Разделитель (Пунктир) -->
+            <div class="absolute left-[35%] top-2 bottom-2 w-px border-r-2 border-dashed border-blue-400/50 z-20"></div>
+
+            <!-- Правая часть (Синяя) -->
+            <div class="flex-1 flex flex-col justify-center px-9 pl-5 relative z-10">
+                <div class="flex justify-between items-start">
+                    <div class="text-xs text-blue-200 font-semibold uppercase mb-1.5 tracking-wider">Промокод</div>
+                </div>
+                
+                <div class="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-lg p-1.5 border border-white/20 cursor-pointer hover:bg-white/20 transition-all group/code"
+                    @click="copyCode()">
+                    
+                    <span class="pl-3 font-mono text-xl font-extrabold tracking-widest text-white drop-shadow-sm">
+                        VAUNIRE
+                    </span>
+                    
+                    <div class="w-8 h-8 flex items-center justify-center rounded bg-white text-blue-600 shadow-sm">
+                        <svg x-show="!copied" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <svg x-show="copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

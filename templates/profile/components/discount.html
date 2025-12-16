@@ -1,0 +1,120 @@
+{% load humanize %}
+<div class="space-y-2.5">
+    <div class="flex items-end justify-between px-1.5 -mb-1">
+        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+            Ваша скидка
+        </h3>
+    </div>
+
+    <!-- БЛОК 1: Шкала званий -->
+    <div class="w-full bg-white rounded-2xl border border-gray-100 shadow-soft p-3">
+        <div class="flex items-center justify-between cursor-pointer px-1.5">
+            
+            <!-- Бронза (3%) -->
+            <div class="flex flex-col items-center gap-0.5 transition-all duration-300 group relative
+                {% if discount_percent < 3 %}opacity-30 grayscale{% else %}opacity-100 scale-110{% endif %}">
+                <span class="text-2xl drop-shadow-sm group-hover:scale-110 transition-transform">🥉</span>
+                <!-- Логика цвета текста: синий если >= 3, но меньше 5 -->
+                <span class="text-[10px] font-medium font-geologica uppercase 
+                    {% if discount_percent >= 3 and discount_percent < 5 %}text-blue-600 font-bold{% else %}text-gray-400{% endif %}">
+                    3%
+                </span>
+            </div>
+            
+            <div class="h-0.5 flex-1 bg-gray-100 mx-2 rounded-full">
+                <div class="h-full bg-blue-100 rounded-full {% if discount_percent >= 5 %}bg-blue-500{% endif %}"></div>
+            </div>
+
+            <!-- Серебро (5%) -->
+            <div class="flex flex-col items-center gap-0.5 transition-all duration-300 group
+                {% if discount_percent < 5 %}opacity-30 grayscale{% else %}opacity-100 scale-110{% endif %}">
+                <span class="text-2xl drop-shadow-sm group-hover:scale-110 transition-transform">🥈</span>
+                <!-- Логика цвета текста: синий если >= 5, но меньше 10 -->
+                <span class="text-[10px] font-medium font-geologica uppercase
+                    {% if discount_percent >= 5 and discount_percent < 10 %}text-blue-600 font-bold{% else %}text-gray-400{% endif %}">
+                    5%
+                </span>
+            </div>
+
+            <div class="h-0.5 flex-1 bg-gray-100 mx-2 rounded-full">
+                <div class="h-full bg-blue-100 rounded-full {% if discount_percent >= 10 %}bg-blue-500{% endif %}"></div>
+            </div>
+
+            <!-- Золото (10%) -->
+            <div class="flex flex-col items-center gap-0.5 transition-all duration-300 group
+                {% if discount_percent < 10 %}opacity-30 grayscale{% else %}opacity-100 scale-110{% endif %}">
+                <span class="text-2xl drop-shadow-sm group-hover:scale-110 transition-transform">🥇</span>
+                <!-- Логика цвета текста: синий если >= 10, но меньше 15 -->
+                <span class="text-[10px] font-medium font-geologica uppercase
+                    {% if discount_percent >= 10 and discount_percent < 15 %}text-blue-600 font-bold{% else %}text-gray-400{% endif %}">
+                    10%
+                </span>
+            </div>
+
+            <div class="h-0.5 flex-1 bg-gray-100 mx-2 rounded-full">
+                <div class="h-full bg-blue-100 rounded-full {% if discount_percent >= 15 %}bg-blue-500{% endif %}"></div>
+            </div>
+
+            <!-- Платина (15%) -->
+            <div class="flex flex-col items-center gap-0.5 transition-all duration-300 group
+                {% if discount_percent < 15 %}opacity-35 grayscale{% else %}opacity-100 scale-110{% endif %}">
+                <span class="text-2xl drop-shadow-sm group-hover:scale-110 transition-transform">💎</span>
+                <!-- Логика цвета текста: синий если >= 15 -->
+                <span class="text-[10px] font-medium font-geologica uppercase
+                    {% if discount_percent >= 15 %}text-blue-600 font-bold{% else %}text-gray-400{% endif %}">
+                    15%
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- БЛОК 2: Карточка скидки с прогрессом -->
+    <div class="relative rounded-2xl shadow-md p-2 overflow-hidden backdrop-blur-xl bg-white/40 border transition-transform duration-300">
+        
+        <!-- Декор фона -->
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-indigo-500/15 to-purple-500/10 pointer-events-none"></div>
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+        <div class="relative flex items-center gap-3 px-1.5">
+            
+            <!-- Смайлик текущего уровня -->
+            <div class="flex-shrink-0 bg-white/60 p-1.5 rounded-full shadow-sm backdrop-blur-sm border border-white/50">
+                <span class="text-2xl block leading-none">
+                    {% if discount_percent >= 15 %}
+                        💎
+                    {% elif discount_percent >= 10 %}
+                        🥇
+                    {% elif discount_percent >= 5 %}
+                        🥈
+                    {% elif discount_percent >= 3 %}
+                        🥉
+                    {% else %}
+                        👋 
+                    {% endif %}
+                </span>
+            </div>
+
+            <!-- Правая часть: Цифры и Прогресс бар -->
+            <div class="flex-1 space-y-0.5">
+                <div class="flex justify-between items-end text-xs">
+                    <div class="text-gray-700 font-medium">
+                        <span class="font-bold text-gray-900 text-sm">{{ total_spent|default:"0"|floatformat:0|intcomma }} ₽</span>
+                        {% if next_discount_threshold > 0 %}
+                            <span class="text-gray-400 mx-0.5">/</span>
+                            <span class="text-gray-500">{{ next_discount_threshold|floatformat:0|intcomma }}</span>
+                        {% else %}
+                            <span class="text-gray-400">₽</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Полоска -->
+                <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden border border-white/50">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-700 ease-out shadow-sm" 
+                        style="width: {{ progress_percent|default:'0' }}%"></div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>

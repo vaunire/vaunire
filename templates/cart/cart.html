@@ -1,0 +1,38 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+<title>{% block title %}Корзина | Vaunire{% endblock %}</title>
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/map.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto mb-28 px-4 py-3.5 max-w-[1330px] flex flex-col min-h-[calc(100vh-200px)]">
+        <!-- Навигация -->
+        <nav class="mb-0.5 text-sm text-gray-500">
+             <!-- ... твой код навигации ... -->
+        </nav>
+        
+        {% include 'core/messages.html' %}
+
+        <!-- HTMX Контейнер -->
+        <div id="cart-lazy-container"
+            hx-get="{% url 'cart' %}?load_cart=true"
+            hx-trigger="load"
+            hx-swap="outerHTML">
+            {% include 'cart/states/skeleton.html' %}
+        </div>
+    </div>
+{% endblock %}
+
+{# Блок JS для подключения скриптов #}
+{% block js %}
+    {{ block.super }} 
+    
+    <!-- 1. API Яндекс Карт -->
+    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_maps_api_key }}&lang=ru_RU" type="text/javascript"></script>
+    
+    <!-- 2. Наш отдельный файл с логикой -->
+    <script src="{% static 'js/map.js' %}"></script>
+{% endblock %}

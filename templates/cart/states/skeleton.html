@@ -1,0 +1,151 @@
+<div class="animate-pulse flex flex-col lg:flex-row gap-8 flex-grow font-montserrat">
+    <div class="flex-1">
+        
+        <div class="flex items-center justify-between mb-1 mt-2">
+            <div class="h-6 bg-gray-200/60 rounded w-48 mb-2"></div>
+        </div>
+
+        <div class="space-y-4 mb-4">
+            {% for i in "12" %}
+            <div class="flex flex-col bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="p-4 flex items-start w-full">
+                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 border border-gray-100"></div>
+                    
+                    <div class="flex-1 ml-5">
+                        <div class="flex justify-between items-start">
+                            <div class="w-2/3 space-y-2">
+                                <div class="h-5 bg-gray-100 rounded w-3/4"></div>
+                                <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+                                <div class="h-8 bg-gray-100 rounded w-full mt-2 opacity-50"></div>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <div class="h-6 bg-gray-100 rounded w-24"></div>
+                                <div class="h-8 bg-gray-100 rounded w-28"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full h-px bg-gray-100"></div>
+                <div class="px-5 py-3 bg-gray-50/30 rounded-b-lg flex gap-2">
+                    <div class="h-6 w-24 bg-gray-100 rounded-lg"></div>
+                    <div class="h-6 w-20 bg-gray-100 rounded-lg"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="h-6 bg-gray-200/60 rounded w-56 mb-3"></div>
+        <div class="h-4 bg-gray-200/60 rounded w-3/4 mb-4"></div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-2">
+                    <div class="h-4 bg-gray-100 rounded w-16"></div>
+                    <div class="h-10 bg-gray-100 rounded-lg w-full"></div>
+                </div>
+                <div class="space-y-2">
+                    <div class="h-4 bg-gray-100 rounded w-20"></div>
+                    <div class="h-10 bg-gray-100 rounded-lg w-full"></div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <div class="h-4 bg-gray-100 rounded w-24"></div>
+                <div class="h-10 bg-gray-100 rounded-lg w-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-2">
+                    <div class="h-4 bg-gray-100 rounded w-32"></div>
+                    <div class="h-10 bg-gray-100 rounded-lg w-full"></div>
+                </div>
+                <div class="space-y-2">
+                    <div class="h-4 bg-gray-100 rounded w-28"></div>
+                    <div class="h-10 bg-gray-100 rounded-lg w-full"></div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <div class="h-4 bg-gray-100 rounded w-32"></div>
+                    <div class="h-3 bg-gray-100 rounded w-24"></div>
+                </div>
+                <div class="h-56 bg-gray-100 rounded-lg w-full"></div>
+            </div>
+
+            <div class="space-y-2">
+                <div class="h-4 bg-gray-100 rounded w-28"></div>
+                <div class="h-20 bg-gray-100 rounded-lg w-full"></div>
+            </div>
+
+            <div class="h-px bg-gray-100 w-full my-4"></div>
+
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 bg-gray-100 rounded"></div>
+                    <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+                </div>
+                <div class="h-12 bg-gray-100 rounded-lg w-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-96 flex-shrink-0">
+        <div class="sticky top-24 space-y-4">
+            
+            <div class="filter drop-shadow-sm">
+                <div class="bg-white rounded-t-xl p-6 pb-2"> 
+                    <div class="h-6 bg-gray-100 rounded w-1/3 mb-5"></div>
+                    <div class="space-y-4">
+                        {% for i in "123" %}
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center w-3/4">
+                                <div class="w-8 h-8 bg-gray-100 rounded-lg mr-3"></div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="h-3 bg-gray-100 rounded w-3/4"></div>
+                                    <div class="h-2 bg-gray-100 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                            <div class="h-4 bg-gray-100 rounded w-16"></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- РАЗДЕЛИТЕЛЬ (БИЛЕТ) -->
+                <div class="relative h-5 w-full">
+                    <div class="absolute inset-0 w-full h-full" 
+                         style="background: radial-gradient(circle at 0 50%, transparent 8px, #ffffff 8.5px), radial-gradient(circle at 100% 50%, transparent 8px, #ffffff 8.5px); background-position: top left, top right; background-size: 51% 100%; background-repeat: no-repeat;">
+                    </div>
+                    <div class="absolute inset-x-4 top-1/2 border-t-2 border-dashed border-gray-100"></div>
+                </div>
+
+                <!-- НИЖНЯЯ ЧАСТЬ -->
+                <div class="bg-white rounded-b-xl p-6 pt-2 space-y-3"> <!-- Убрал border-t-0 -->
+                    <div class="flex justify-between">
+                        <div class="h-3 bg-gray-100 rounded w-16"></div>
+                        <div class="h-3 bg-gray-100 rounded w-12"></div>
+                    </div>
+                    <div class="pt-3 border-t border-gray-100 flex justify-between items-end">
+                        <div class="h-3 bg-gray-100 rounded w-20 mb-1"></div>
+                        <div class="flex flex-col items-end gap-1">
+                            <div class="h-7 bg-gray-100 rounded w-28"></div>
+                            <div class="h-3 bg-gray-100 rounded w-16"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200 h-[74px]">
+                 <div class="flex gap-2 h-full items-center">
+                     <div class="h-9 bg-gray-100 rounded flex-1"></div>
+                     <div class="h-9 bg-gray-100 rounded w-10"></div>
+                 </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-3.5 border border-gray-200">
+                <div class="h-9 bg-gray-100 rounded w-full"></div>
+            </div>
+        </div>
+    </div>
+</div>
