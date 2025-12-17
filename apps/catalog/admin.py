@@ -124,7 +124,7 @@ class AlbumAdmin(BaseAdmin):
         ('country', RelatedDropdownFilter),
         ('label', RelatedDropdownFilter),
         'condition',
-        'has_autograph', # <-- Новый фильтр
+        'has_autograph', 
         'package_type', 
         'is_explicit',  
         'out_of_stock', 

@@ -22,7 +22,6 @@ class Promotion(models.Model):
     def __str__(self):
         return f"{self.name} ({self.discount_percentage}%)"
 
-    # Проверяет, активна ли акция по датам и статусу
     def is_valid(self):
         now = timezone.now()
         return self.is_active and self.start_date <= now <= self.end_date

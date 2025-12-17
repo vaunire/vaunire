@@ -1,7 +1,7 @@
-<div class="mb-5">
+<div class="mb-4">
     <div class="flex flex-row justify-between items-center gap-4 flex-wrap">
         
-        <!-- Заголовок с декоративным счетчиком -->
+        <!-- Заголовок -->
         <div class="relative inline-block">
             <h1 class="text-2xl font-bold text-black relative z-10">
               Музыкальный каталог
@@ -19,7 +19,6 @@
     </div>
 </div>
 
-<!-- Контейнер каталога с индикатором загрузки -->
 <div id="loading-indicator" class="relative min-h-[500px] transition-all duration-200">
     
     <!-- Оверлей загрузки -->
@@ -31,14 +30,12 @@
     </div>
 
     <!-- Сетка товаров -->
-    <div id="catalog-grid" class="content-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div id="catalog-grid" class="content-grid grid grid-cols-4 gap-5">
         {% for album in albums %}
             {% if view_type == 'list' %}
-                 <!-- Карточка списком -->
-                 {% include 'catalog/cards/list_card.html' %}
+                {% include 'catalog/cards/list_card.html' %}
             {% else %}
-                 <!-- Карточка сеткой -->
-                 {% include 'catalog/cards/grid_card.html' %}
+                {% include 'catalog/cards/grid_card.html' %}
             {% endif %}
         {% endfor %}
 

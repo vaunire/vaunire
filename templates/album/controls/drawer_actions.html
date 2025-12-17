@@ -1,11 +1,9 @@
 {% load humanize %}
+
+{% if user.is_authenticated %}
 <div class="flex gap-4 h-full w-full font-montserrat tracking-wide justify-end" id="drawer-actions-{{ album.id }}">
-    
     {% if album.stock %}
-        <!-- Корзина -->
         {% if album in cart.products_in_cart %}
-            
-            <!-- Поиск товара для получения кол-ва -->
             {% for item in cart.products.all %}
                 {% if item.content_object == album %}
                     <!-- Блок: товар в корзине -->
@@ -25,15 +23,12 @@
                               class="flex items-center bg-white border border-gray-200 rounded-lg p-1 h-full shrink-0">
                             {% csrf_token %}
                             
-                            <!-- Минус -->
                             <button type="submit" name="action" value="decrease" class="w-8 h-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-gray-50 rounded transition-colors">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
                             </button>
                             
-                            <!-- Число -->
                             <div class="w-8 text-center font-semibold text-gray-700 text-sm">{{ item.quantity }}</div>
                             
-                            <!-- Плюс -->
                             <button type="submit" name="action" value="increase" 
                                     class="w-8 h-full flex items-center justify-center rounded transition-colors 
                                     {% if item.quantity >= album.stock %}
@@ -108,3 +103,4 @@
         </button>
     {% endif %}
 </div>
+{% endif %}

@@ -68,8 +68,10 @@
                                     <path d="M13.409 2.513a3.75 3.75 0 0 0-2.818 0l-2.19.888l9.592 3.73l3.374-1.303a1.8 1.8 0 0 0-.46-.275zM22 7.191l-9.25 3.574v10.923q.336-.068.659-.199l7.498-3.04A1.75 1.75 0 0 0 22 16.827zM11.25 21.688V10.765L2 7.191v9.637a1.75 1.75 0 0 0 1.093 1.621l7.498 3.04q.323.13.659.2M2.633 5.828L12 9.447l3.917-1.514l-9.543-3.71l-3.281 1.33q-.256.104-.46.275"/>
                                 </svg>
                                 <span class="flex-1 text-left">Мои заказы</span>
-                                <span class="ml-2 py-0.5 px-2 rounded-md text-[10px] font-semibold"
-                                    :class="isActive('orders') ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'">
+                                <span class="ml-2 py-0.5 px-2 rounded-md text-[10px] font-semibold font-geologica transition-all duration-200"
+                                    :class="isActive('orders') 
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
+                                        : 'bg-gray-100 text-gray-500/85 group-hover:bg-gray-200'">
                                     {{ orders_with_status|length }}
                                 </span>
                             </button>
@@ -103,10 +105,12 @@
                                 </svg>
                                 <span class="flex-1 text-left">Мои возвраты</span>
                                 {% if customer.return_requests.count > 0 %}
-                                <span class="ml-2 py-0.5 px-2 rounded-md text-[10px] font-semibold"
-                                    :class="isActive('returns') ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'">
-                                    {{ customer.return_requests.count }}
-                                </span>
+                                    <span class="ml-2 py-0.5 px-2 rounded-md text-[10px] font-semibold font-geologica transition-all duration-200"
+                                        :class="isActive('returns') 
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
+                                            : 'bg-gray-100 text-gray-500/85 group-hover:bg-gray-200'">
+                                        {{ customer.return_requests.count }}
+                                    </span>
                                 {% endif %}
                             </button>
                         </nav>

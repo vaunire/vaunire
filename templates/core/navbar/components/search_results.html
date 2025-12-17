@@ -29,7 +29,7 @@
 
                             <!-- Инфо -->
                             <div class="min-w-0 flex-1">
-                                <div class="text-sm text-gray-900 group-hover:text-blue-600 font-normal truncate transition-colors">
+                                <div class="text-sm text-gray-900 group-hover:text-blue-700 font-normal truncate transition-colors">
                                     {{ album.name }}
                                 </div>
                                 <div class="text-[13px] text-gray-500 truncate">
@@ -48,11 +48,8 @@
         {% endif %}
 
         <!-- Блок: Исполнители -->
-        {% if artists %}
-            <!-- ДОБАВИЛ: items-center -->
+        {% if artists %}            
             <div class="flex w-full items-center">
-                <!-- Иконка -->
-                <!-- УБРАЛ: pt-2.5 -->
                 <div class="w-12 flex justify-center text-gray-400/60 shrink-0">
                     <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
@@ -66,18 +63,17 @@
                            class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group">
                             
                             <div class="shrink-0">
-                                <!-- ВАЖНО: Добавлена проверка if artist.image -->
                                 {% if artist.image %}
-                                    <img src="{{ artist.image.url }}" alt="{{ artist.name }}" class="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-100">
+                                    <img src="{{ artist.image.url }}" alt="{{ artist.name }}" class="w-10 h-10 rounded-full object-cover shadow-sm">
                                 {% else %}
-                                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 border border-gray-200">
+                                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 border border-gray-100">
                                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" /></svg>
                                     </div>
                                 {% endif %}
                             </div>
 
                             <div class="min-w-0 flex-1">
-                                <div class="text-sm text-gray-900 group-hover:text-blue-600 font-normal truncate transition-colors">
+                                <div class="text-sm text-gray-900 group-hover:text-blue-700 font-normal truncate transition-colors">
                                     {{ artist.name }}
                                 </div>
                                 {% if artist.genre %}
@@ -94,10 +90,10 @@
     </div>
 {% else %}
     <!-- Пустое состояние -->
-    <div class="flex flex-col items-center justify-center py-8 text-center">
-        <svg class="w-10 h-10 text-gray-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="flex flex-col items-center justify-center py-5 text-center">
+        <svg class="w-10 h-10 text-gray-300/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <p class="text-[13px] mt-1 text-gray-500">По вашему запросу ничего не найдено</p>
+        <p class="text-[13px] mt-1 text-gray-700">По вашему запросу ничего не найдено</p>
     </div>
 {% endif %}

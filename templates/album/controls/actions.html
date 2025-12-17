@@ -1,12 +1,13 @@
 {% load humanize %}
 
+{% if user.is_authenticated %}
 <!-- Основной контейнер с уникальным ID -->
 <div class="flex gap-4 mt-4 h-11 w-full" id="detail-actions-{{ album.id }}">
     
-    <!-- 1. ПРОВЕРКА НАЛИЧИЯ (STOCK) -->
+    <!-- 1. Проверка наличия -->
     {% if album.stock %}
         
-        <!-- 1.1 ТОВАР ЕСТЬ В КОРЗИНЕ (Используем cart_item из контекста) -->
+        <!-- 1.1 Товар есть в корзине -->
         {% if cart_item %}
             
             <div class="flex flex-1 gap-3">
@@ -29,7 +30,6 @@
                     
                     {% csrf_token %}
                     
-                    <!-- Кнопка МИНУС -->
                     <button type="submit" name="action" value="decrease" 
                             class="w-8 h-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-gray-50 rounded transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,12 +37,10 @@
                         </svg>
                     </button>
                     
-                    <!-- КОЛИЧЕСТВО (Берем из cart_item) -->
                     <div class="w-8 text-center font-semibold text-gray-700 text-sm">
                         {{ cart_item.quantity }}
                     </div>
                     
-                    <!-- Кнопка ПЛЮС -->
                     <button type="submit" name="action" value="increase" 
                             class="w-8 h-full flex items-center justify-center rounded transition-colors 
                             {% if cart_item.quantity >= album.stock %}
@@ -58,7 +56,7 @@
                 </form>
             </div>
 
-        <!-- 1.2 ТОВАРА НЕТ В КОРЗИНЕ (Кнопка Купить) -->
+        <!-- 1.2 Товара нет в корзине -->
         {% else %}
             
             <button hx-get="{% url 'add_to_cart' ct_model=album.ct_model slug=album.slug %}" 
@@ -74,11 +72,10 @@
 
         {% endif %}
 
-    <!-- 2. НЕТ В НАЛИЧИИ (Лист ожидания) -->
+    <!-- 2. Нет в наличии (Лист ожидания) -->
     {% else %}
         <div class="w-full">
             {% if is_in_wishlist %}
-                <!-- Удалить из листа ожидания -->
                 <button hx-get="{% url 'remove_from_wishlist' album_id=album.id %}" 
                         hx-target="#detail-actions-{{ album.id }}" 
                         hx-swap="outerHTML" 
@@ -90,7 +87,6 @@
                     В листе ожидания
                 </button>
             {% else %}
-                <!-- Добавить в лист ожидания -->
                 <button hx-get="{% url 'add_to_wishlist' album_id=album.id %}" 
                         hx-target="#detail-actions-{{ album.id }}" 
                         hx-swap="outerHTML" 
@@ -102,9 +98,8 @@
         </div>
     {% endif %}
     
-    <!-- 3. ИЗБРАННОЕ -->
+    <!-- 3. Избранное -->
     {% if is_in_favorite %}
-        <!-- Удалить из избранного (Закрашенное сердце) -->
         <button hx-get="{% url 'remove_from_favorite' album_id=album.id %}" 
                 hx-target="#detail-actions-{{ album.id }}" 
                 hx-swap="outerHTML"
@@ -116,7 +111,6 @@
             </svg>
         </button>
     {% else %}
-        <!-- Добавить в избранное (Контурное сердце) -->
         <button hx-get="{% url 'add_to_favorite' album_id=album.id %}" 
                 hx-target="#detail-actions-{{ album.id }}" 
                 hx-swap="outerHTML"
@@ -128,5 +122,5 @@
                 </svg>
         </button>
     {% endif %}
-
 </div>
+ {% endif %}

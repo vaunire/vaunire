@@ -40,9 +40,9 @@
               hx-push-url="true">
             
             <input type="hidden" name="media_type" x-model="mediaType">
-            <input type="hidden" name="sort" value="{{ sort|default:'' }}">
+            <input type="hidden" name="sort" id="sort_input" value="{{ filters.sort|default:'' }}">
             <input type="hidden" name="per_page" value="{{ per_page|default:'8' }}">
-            <input type="hidden" name="view" value="{{ view_type|default:'grid' }}">
+            <input type="hidden" name="view" id="view_input" value="{{ view_type|default:'grid' }}">
             
             <!-- ЦЕНА -->
             <div class="mb-4">

@@ -3,8 +3,6 @@
 {% block content %}
 <div class="min-h-screen flex justify-center mt-16">
     <div class="w-full max-w-lg">
-        
-        <!-- Карточка входа -->
         <div class="bg-white rounded-b-2xl shadow-lg overflow-hidden font-normal">
             <div class="h-1.5 bg-blue-600"></div>
 
@@ -44,14 +42,13 @@
                         <label for="username" class="flex items-center mb-1.5">
                             <svg class="text-blue-600 mr-1.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                 <path d="M7.5 6.5C7.5 8.981 9.519 11 12 11s4.5-2.019 4.5-4.5S14.481 2 12 2S7.5 4.019 7.5 6.5zM20 21h1v-1c0-3.859-3.141-7-7-7h-4c-3.86 0-7 3.141-7 7v1h17z" fill="currentColor"/>
-                            </svg>
+                            </svg> 
                             <span class="text-sm font-normal">Имя пользователя</span>
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
                             </div>
-                            <!-- Плейсхолдер обновлен -->
                             <input type="text" id="username" name="username" value="{{ form.username.value|default:'' }}"
                                    class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 focus:border-b-blue-500 outline-none transition-all duration-300 placeholder-gray-400/70"
                                    placeholder="ivan_user" required>
@@ -70,7 +67,6 @@
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <div class="w-[3px] h-5 bg-blue-500 rounded-full transition-all duration-300"></div>
                             </div>
-                            <!-- Плейсхолдер обновлен -->
                             <input type="password" id="password" name="password"
                                    class="text-sm block w-full rounded-lg pl-7 pr-4 py-2.5 bg-transparent border-b border-gray-200 focus:border-b-blue-500 outline-none transition-all duration-300 placeholder-gray-400/70"
                                    placeholder="••••••••" required>
@@ -85,7 +81,6 @@
                                 Запомнить меня
                             </label>
                         </div>
-                        <!-- Если нужна ссылка "Забыли пароль?", раскомментируйте строку ниже -->
                         <a href="#" class="text-blue-600 hover:text-blue-500">Забыли пароль?</a> 
                     </div>
 
@@ -111,5 +106,4 @@
 </div>
 {% endblock content %}
 
-<!-- Скрываем футер на странице входа -->
 {% block footer %}{% endblock footer %}

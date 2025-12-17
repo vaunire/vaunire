@@ -1,9 +1,9 @@
 {% if page_obj %}
     <!-- Сетка избранных товаров -->
-    <div class="flex flex-wrap gap-3">
+    <div class="flex flex-wrap gap-3 mb-72">
         {% for album in page_obj %}
             <!-- Карточка альбома -->
-            <div id="fav-card-{{ album.id }}" class="w-60 mb-72 min-w-[calc(20%-10px)] flex-shrink-0">
+            <div id="fav-card-{{ album.id }}" class="w-60 mb-4 min-w-[calc(20%-10px)] flex-shrink-0">
                 {% include 'catalog/cards/grid_card.html' with album=album %}
             </div>
         {% endfor %}

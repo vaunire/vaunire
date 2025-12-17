@@ -48,9 +48,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    # --- Сторонние библиотеки ---
+    # --- Tailwind CSS ---
     "tailwind", "_tailwind",  
-    # Улучшенные выпадающие списки
+    
+    # --- Улучшенные выпадающие списки ---
     'django_select2',       
 
     # --- Локальные приложения ---

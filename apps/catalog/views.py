@@ -8,7 +8,7 @@ from django.db.models import (Case, DecimalField, F, Max, Min, OuterRef,
                               Prefetch, Q, Subquery, Value, When)
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from apps.accounts.mixins import NotificationsMixin
@@ -21,27 +21,20 @@ from .models import (Album, Artist, Genre, PriceList, PriceListItem,
 from .utils import get_visible_styles
 
 
-def search_view(request):
-    query = request.GET.get('q', '').strip()
-    if not query:
-        return HttpResponse('')
+# ==========================================
+# БЛОК 1: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ==========================================
 
-    albums = Album.objects.filter(
-        Q(name__icontains=query) | Q(artist__name__icontains=query)
-    ).select_related('artist').prefetch_related('image_gallery')[:5]
-    
-    artists = Artist.objects.filter(
-        name__icontains=query
-    ).prefetch_related('image_gallery')[:5]
-
-    return render(request, 'core/navbar/components/search_results.html', {
-        'albums': albums,
-        'artists': artists,
-        'query': query
-    })
-
+def get_cached_pricelist():
+    """Получает активный прайс-лист """
+    return cache.get_or_set(
+        'active_pricelist',
+        lambda: PriceList.objects.filter(is_active=True).first(),
+        3600
+    )
 
 def annotate_prices(queryset, active_pricelist):
+    """Аннотирует QuerySet ценами и скидками """
     if not active_pricelist:
         return queryset.annotate(
             annotated_current_price=Value(0, output_field=DecimalField()),
@@ -75,6 +68,29 @@ def annotate_prices(queryset, active_pricelist):
         )
     )
 
+def search_view(request):
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return HttpResponse('')
+
+    albums = Album.objects.filter(
+        Q(name__icontains=query) | Q(artist__name__icontains=query)
+    ).select_related('artist').prefetch_related('image_gallery')[:5]
+    
+    artists = Artist.objects.filter(
+        name__icontains=query
+    ).prefetch_related('image_gallery')[:5]
+
+    return render(request, 'core/navbar/components/search_results.html', {
+        'albums': albums,
+        'artists': artists,
+        'query': query
+    })
+
+
+# ==========================================
+# БЛОК 2: КАТАЛОГ (BaseView)
+# ==========================================
 
 class BaseView(CartMixin, NotificationsMixin, views.View):
     def get_param(self, request, param, default=None, cast_type=str):
@@ -89,17 +105,10 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
             return default
 
     def get(self, request, *args, **kwargs):
-        # 1. Кэширование прайс-листа
-        active_pricelist = cache.get_or_set(
-            'active_pricelist',
-            lambda: PriceList.objects.filter(is_active=True).first(),
-            3600
-        )
+        active_pricelist = get_cached_pricelist()
         
-        # 2. Базовый QuerySet с ценами
         qs = annotate_prices(Album.objects.all(), active_pricelist)
 
-        # 3. Кэширование статистики (Min/Max)
         global_stats = cache.get('album_global_stats')
         if global_stats is None:
             global_stats = qs.aggregate(
@@ -117,7 +126,6 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
             'max_year': int(global_stats['max_year'] or timezone.now().year)
         }
 
-        # 4. Фильтры
         filters = {
             'media_type': self.get_param(request, 'media_type', cast_type=int),
             'min_price': self.get_param(request, 'min_price', defaults['min_price'], Decimal),
@@ -152,7 +160,6 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
         if filters['offer_of_the_week']:
             qs = qs.filter(offer_of_the_week=True)
 
-        # 5. Сортировка
         ordering_map = {
             'price_desc': '-annotated_discounted_price',
             'price_asc': 'annotated_discounted_price',
@@ -161,11 +168,9 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
         }
         qs = qs.order_by(ordering_map.get(filters['sort'], '-id'))
 
-        # 6. Пагинация и выборка
         paginator = Paginator(qs, filters['per_page'])
         page_obj = paginator.get_page(request.GET.get('page'))
 
-        # Оптимизация запросов для текущей страницы
         page_obj.object_list = page_obj.object_list.select_related(
             'artist', 'genre', 'media_type'
         ).prefetch_related(
@@ -180,11 +185,9 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
 
         page_album_ids = [album.id for album in page_obj]
 
-        # 1. Быстрая проверка корзины (через ContentType, так как связь универсальная)
         cart_album_ids = set()
         if self.cart:
             album_ct = ContentType.objects.get_for_model(Album)
-            
             cart_album_ids = set(
                 CartProduct.objects.filter(
                     cart=self.cart, 
@@ -193,8 +196,9 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
                 ).values_list('object_id', flat=True)
             )
 
-        # 2. Быстрая проверка избранного
         favorite_album_ids = set()
+        wishlist_album_ids = set()  
+
         if request.user.is_authenticated:
             customer = getattr(request.user, 'customer', None)
             if customer:
@@ -202,10 +206,12 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
                     customer.favorite.filter(id__in=page_album_ids)
                     .values_list('id', flat=True)
                 )
+                wishlist_album_ids = set(
+                    customer.wishlist.filter(id__in=page_album_ids)
+                    .values_list('id', flat=True)
+                )
 
         is_htmx = request.headers.get('HX-Request')
-        
-        # Ленивая загрузка
         month_bestseller = None
         offer_of_the_week_album = None
         slides = []
@@ -254,20 +260,25 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
             'offer_of_the_week_album': offer_of_the_week_album,
             'cart': self.cart,
             'notifications': self.notifications(request.user),
-            
             'cart_album_ids': cart_album_ids,
             'favorite_album_ids': favorite_album_ids,
+            'wishlist_album_ids': wishlist_album_ids,
         }
 
         template = 'catalog/sections/content.html' if is_htmx else 'core/base.html'
         return render(request, template, context)
-        
+
+
+# ==========================================
+# БЛОК 3: ДЕТАЛЬНЫЕ СТРАНИЦЫ
+# ==========================================
 
 class ArtistDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
     model = Artist
     template_name = 'artist/artist.html'
     slug_url_kwarg = 'artist_slug'
     context_object_name = 'artist'
+
 
 class AlbumDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
     model = Album
@@ -282,12 +293,7 @@ class AlbumDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
             Prefetch('styles', queryset=Style.objects.select_related('genre')),
             'image_gallery'
         )
-        
-        active_pricelist = cache.get_or_set(
-            'active_pricelist',
-            lambda: PriceList.objects.filter(is_active=True).first(),
-            3600
-        )
+        active_pricelist = get_cached_pricelist()
         qs = annotate_prices(qs, active_pricelist)
         return qs
 
@@ -300,41 +306,18 @@ class AlbumDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
         all_styles_len = len(album.styles.all())
         album.remaining_styles_count = max(0, all_styles_len - len(album.visible_styles))
 
-        cart_item = None
-        if self.cart:
-            cart_products = context.get('cart_products', [])
-            
-            album_model_name = Album._meta.model_name
-            for cp in cart_products:
-                if cp.content_type.model == album_model_name and cp.object_id == album.id:
-                    cart_item = cp
-                    break
-        
-        context['cart_item'] = cart_item
-        context['is_in_cart'] = cart_item is not None
-
-        is_in_favorite = False
-        is_in_wishlist = False
-        
-        if request.user.is_authenticated:
-            customer = getattr(request.user, 'customer', None)
-            if customer:
-                is_in_favorite = customer.favorite.filter(pk=album.pk).exists()
-                is_in_wishlist = customer.wishlist.filter(pk=album.pk).exists()
-
-        context['is_in_favorite'] = is_in_favorite
-        context['is_in_wishlist'] = is_in_wishlist
-
         recently_viewed_ids = request.session.get('recently_viewed', [])
-        
         recently_viewed_albums = []
+        
         if recently_viewed_ids:
             ids_to_fetch = [id for id in recently_viewed_ids if id != album.id][:15]
             
             if ids_to_fetch:
-                recently_rec_qs = Album.objects.filter(id__in=ids_to_fetch).select_related('artist', 'genre', 'media_type').prefetch_related('image_gallery', 'styles__genre')
+                recently_rec_qs = Album.objects.filter(id__in=ids_to_fetch)\
+                    .select_related('artist', 'genre', 'media_type')\
+                    .prefetch_related('image_gallery', 'styles__genre')
                 
-                active_pricelist = PriceList.objects.filter(is_active=True).first()
+                active_pricelist = get_cached_pricelist()
                 recently_rec_qs = annotate_prices(recently_rec_qs, active_pricelist)
 
                 recently_viewed_albums = list(recently_rec_qs)
@@ -342,18 +325,54 @@ class AlbumDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
 
                 for r_album in recently_viewed_albums:
                      r_album.visible_styles = get_visible_styles(r_album)
+                     # len() вместо count()
                      r_album.remaining_styles_count = max(0, r_album.styles.count() - len(r_album.visible_styles))
         
         context['recently_viewed_albums'] = recently_viewed_albums
 
         if album.id in recently_viewed_ids:
             recently_viewed_ids.remove(album.id)
-        
         recently_viewed_ids.insert(0, album.id)
-        
         recently_viewed_ids = recently_viewed_ids[:10]
-        
         request.session['recently_viewed'] = recently_viewed_ids
         request.session.modified = True
 
+        cart_item = None
+        cart_album_ids = set()
+
+        if self.cart:
+            cart_products = context.get('cart_products', self.cart.products.all())
+            
+            album_ct = ContentType.objects.get_for_model(Album)
+            
+            for cp in cart_products:
+                if cp.content_type_id == album_ct.id:
+                    if cp.object_id == album.id:
+                        cart_item = cp
+                    cart_album_ids.add(cp.object_id)
+        
+        context['cart_item'] = cart_item
+        context['cart_album_ids'] = cart_album_ids
+
+        # 3. Избранное и Вишлист
+        is_in_favorite = False
+        is_in_wishlist = False
+        favorite_album_ids = set()
+        wishlist_album_ids = set()
+
+        if request.user.is_authenticated:
+            customer = getattr(request.user, 'customer', None)
+            if customer:
+                is_in_favorite = customer.favorite.filter(pk=album.pk).exists()
+                is_in_wishlist = customer.wishlist.filter(pk=album.pk).exists()
+                
+                all_ids = [album.id] + [a.id for a in context.get('recently_viewed_albums', [])]
+                favorite_album_ids = set(customer.favorite.filter(id__in=all_ids).values_list('id', flat=True))
+                wishlist_album_ids = set(customer.wishlist.filter(id__in=all_ids).values_list('id', flat=True))
+
+        context['is_in_favorite'] = is_in_favorite
+        context['is_in_wishlist'] = is_in_wishlist
+        context['favorite_album_ids'] = favorite_album_ids
+        context['wishlist_album_ids'] = wishlist_album_ids
+        
         return context

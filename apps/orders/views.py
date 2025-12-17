@@ -4,8 +4,10 @@ import stripe
 from django import views
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Prefetch
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -16,15 +18,78 @@ from django.views.decorators.csrf import csrf_exempt
 from apps.accounts.models import Customer
 from apps.cart.mixins import CartMixin
 from apps.cart.models import Cart, CartProduct
-from apps.catalog.models import Album
-
-from .forms import OrderForm
-from .models import Order, Payment, ReturnRequest
+from apps.catalog.models import Album, PriceList, Style
+from apps.catalog.views import annotate_prices
+from apps.orders.forms import OrderForm
+from apps.orders.models import Order, Payment, ReturnRequest
 
 # Настройка Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-# Обновляем количество проданных альбомов
+
+# ==========================================
+# БЛОК 1: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ==========================================
+
+def get_cached_pricelist():
+    """Получает активный прайс-лист из кэша"""
+    return cache.get_or_set(
+        'active_pricelist',
+        lambda: PriceList.objects.filter(is_active=True).first(),
+        3600
+    )
+
+def prefetch_albums_for_products(products_list):
+    """ Загружает альбомы """
+    if not products_list:
+        return
+
+    album_ct = ContentType.objects.get_for_model(Album)
+    
+    # Сбор ID без лишних запросов
+    album_ids = {
+        p.object_id for p in products_list 
+        if p.content_type_id == album_ct.id
+    }
+            
+    if not album_ids:
+        return
+
+    active_pricelist = get_cached_pricelist()
+    
+    optimized_albums_qs = Album.objects.filter(id__in=album_ids)
+    optimized_albums_qs = annotate_prices(optimized_albums_qs, active_pricelist)
+    optimized_albums_qs = optimized_albums_qs.select_related('artist', 'genre')
+    optimized_albums_qs = optimized_albums_qs.prefetch_related(
+        'image_gallery',
+        Prefetch('styles', queryset=Style.objects.select_related('genre'))
+    )
+
+    albums_map = optimized_albums_qs.in_bulk()
+
+    # Подмена объектов в памяти
+    for product in products_list:
+        if product.content_type_id == album_ct.id and product.object_id in albums_map:
+            product.content_object = albums_map[product.object_id]
+
+def optimize_cart_products(cart):
+    """Применяет оптимизацию к объекту корзины."""
+    if not cart:
+        return
+    
+    # Загружаем продукты с ContentType
+    products = list(cart.products.select_related('content_type').all())
+    prefetch_albums_for_products(products)
+    
+    # Обновляем кэш префетча
+    cart.products._result_cache = products
+    cart.products._prefetch_done = True
+
+
+# ==========================================
+# БЛОК 2: ЛОГИКА ЗАКАЗОВ
+# ==========================================
+
 def process_successful_order(order):
     """
     Выполняется 1 раз при успешной оплате:
@@ -34,19 +99,17 @@ def process_successful_order(order):
     """
     # Защита от повторного выполнения
     if hasattr(order, '_processed') or order.status != 'created':
-        # Если статус уже 'paid' или 'in_progress', значит уже обработали
         if order.paid: 
             return
 
-    # 1. Списание остатков и увеличение продаж
-    for item in order.cart.products.all():
+    items = list(order.cart.products.select_related('content_type').all())
+    prefetch_albums_for_products(items)
+
+    for item in items:
         product = item.content_object
-        
-        # Списываем со склада (только по факту оплаты)
         if product.stock >= item.quantity:
             product.stock = F('stock') - item.quantity
         else:
-            # Если купили больше, чем есть, то уходим в минус
             product.stock = F('stock') - item.quantity 
         
         if item.content_type.model == 'album':
@@ -54,23 +117,28 @@ def process_successful_order(order):
         
         product.save()
 
-    # 2. Фиксация промокода
     cart = order.cart
     if cart.applied_promocode:
         cart.applied_promocode.times_used = F('times_used') + 1
         cart.applied_promocode.save()
     
-    # Помечаем объект (для текущего запроса), что он обработан
     order._processed = True
+
 
 class MakeOrderView(CartMixin, views.View):
     """Создаёт новый заказ, проверяет наличие и создает платеж в Stripe"""
     @transaction.atomic 
     def post(self, request, *args, **kwargs):
         form = OrderForm(request.POST or None)
-        customer = Customer.objects.get(user = request.user)
+        
+        try:
+            customer = Customer.objects.select_related('user').get(user=request.user)
+        except Customer.DoesNotExist:
+            customer, _ = Customer.objects.get_or_create(user=request.user)
+
         if form.is_valid():
-            # --- 1. Проверка наличия товаров ---
+            optimize_cart_products(self.cart)
+
             out_of_stock = []
             more_than_on_stock = []
 
@@ -106,11 +174,9 @@ class MakeOrderView(CartMixin, views.View):
             new_order.buying_type = form.cleaned_data['buying_type']
             new_order.order_date = form.cleaned_data['order_date']
             new_order.comment = form.cleaned_data['comment']
-            # Начальный статус
             new_order.status = 'created'
             new_order.save()
 
-            # Обновление данных покупателя
             customer.first_name = form.cleaned_data['first_name']
             customer.last_name = form.cleaned_data['last_name']
             customer.phone = form.cleaned_data['phone']
@@ -122,19 +188,15 @@ class MakeOrderView(CartMixin, views.View):
                 line_items = []
                 calculated_items_amount = 0
 
-                # 1. Собираем ВСЕ товары в список
                 for item in self.cart.products.all():
-                    # Формируем данные товара
                     product_name = f"{item.content_object.artist.name} - {item.content_object.name}"
                     desc = f"Артикул: {item.content_object.article} | {item.content_object.get_format() or 'Standart'}"
                     img_url = 'https://via.placeholder.com/150'
                     if item.content_object.image:
                         img_url = request.build_absolute_uri(item.content_object.image.url)
 
-                    # Цена одной штуки (с учетом скидок альбома, но БЕЗ промокода)
                     unit_price_cents = int(item.content_object.discounted_price * 100)
                     
-                    # Добавляем в список для Stripe
                     line_items.append({
                         'price_data': {
                             'currency': 'rub',
@@ -148,29 +210,24 @@ class MakeOrderView(CartMixin, views.View):
                         'quantity': item.quantity,
                     })
                     
-                    # Считаем сумму товаров вручную, чтобы понять размер скидки
                     calculated_items_amount += item.content_object.discounted_price * item.quantity
 
-                # 2. Обработка ПРОМОКОДА (создание купона)
                 discounts = []
                 
-                # Если в корзине применен промокод, итоговая цена (final_price) меньше суммы товаров
                 if self.cart.applied_promocode:
-                    # calculated_items_amount - это сумма товаров
-                    # self.cart.final_price - это сколько клиент должен заплатить
                     discount_amount = calculated_items_amount - self.cart.final_price
                     
                     if discount_amount > 0:
+                        coupon_name = self.cart.applied_promocode.code
+                        
                         coupon = stripe.Coupon.create(
                             amount_off=int(discount_amount * 100), 
                             currency='rub',
-                            duration='once', # Одноразовая скидка на этот чек
-                            name=f"Промокод {self.cart.applied_promocode.code}"
+                            duration='once',
+                            name=coupon_name 
                         )
-                        # Добавляем купон в параметры сессии
                         discounts = [{'coupon': coupon.id}]
 
-                # 3. Создаем сессию
                 checkout_session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
                     line_items=line_items,
@@ -197,7 +254,6 @@ class MakeOrderView(CartMixin, views.View):
                 return redirect(checkout_session.url, code=303)
 
             except stripe.error.StripeError as e:
-                # Откат в случае ошибки
                 new_order.delete()
                 self.cart.in_order = False
                 self.cart.save()
@@ -218,7 +274,7 @@ class PaymentSuccessView(views.View):
         try:
             session = stripe.checkout.Session.retrieve(session_id)
             order_id = session.metadata.get('order_id')
-            order = Order.objects.get(id=order_id)
+            order = Order.objects.select_related('cart').get(id=order_id)
 
             if not order.paid:
                 order.paid = True
@@ -232,13 +288,15 @@ class PaymentSuccessView(views.View):
                 payment.payment_date = timezone.now()
                 payment.save()
                 
-                cart_products = order.cart.products.all()
-                context = {
-                    'order': order,
-                    'cart_products': cart_products,
-                    'total_price': order.cart.final_price,
-                }
-                return render(request, 'partials/cart/states/paid_success.html', context)
+            cart_products = list(order.cart.products.select_related('content_type').all())
+            prefetch_albums_for_products(cart_products)
+            
+            context = {
+                'order': order,
+                'cart_products': cart_products,
+                'total_price': order.cart.final_price,
+            }
+            return render(request, 'cart/states/paid_success.html', context)
 
         except (stripe.error.StripeError, Order.DoesNotExist, Payment.DoesNotExist) as e:
             messages.error(request, 'Ошибка при обработке платежа.')
@@ -250,19 +308,15 @@ class PaymentCancelView(views.View):
         order_id = request.GET.get('order_id')
         if order_id:
             try:
-                # Ищем заказ, который принадлежит текущему пользователю и еще НЕ оплачен
                 order = Order.objects.get(id = order_id, customer__user = request.user, paid = False)
                 
-                # Освобождаем корзину
                 cart = order.cart
                 cart.in_order = False
                 cart.save()
 
-                # Удаляем сам черновик заказа (так как оплата не прошла, он нам не нужен, пользователь создаст новый при следующей попытке)
                 order.delete()
                 messages.warning(request, 'Оплата была отменена. Вы можете попробовать снова.')
             except Order.DoesNotExist:
-                 # Если заказ не найден (или уже удален/оплачен)
                 messages.error(request, 'Заказ не найден.')
         else:
             messages.error(request, 'Некорректный запрос отмены.')
@@ -291,13 +345,12 @@ class StripeWebhookView(views.View):
                 return HttpResponse(status=200)
 
             try:
-                order = Order.objects.get(id = order_id)
+                order = Order.objects.select_related('cart').get(id = order_id)
                 if not order.paid:
                     order.paid = True
                     order.status = 'in_progress'
                     order.save()
                     
-                    # Дублируем логику успеха (на случай, если пользователь закрыл браузер до редиректа)
                     process_successful_order(order)
 
                     payment = Payment.objects.get(payment_id=session['id'])
@@ -309,6 +362,11 @@ class StripeWebhookView(views.View):
 
         return HttpResponse(status=200)
 
+
+# ==========================================
+# БЛОК 3: ВОЗВРАТЫ
+# ==========================================
+
 class SubmitReturnView(views.View):
     """Обрабатывает запрос на возврат товара"""
     def post(self, request, order_id, *args, **kwargs):
@@ -319,23 +377,20 @@ class SubmitReturnView(views.View):
             messages.error(request, 'Заказ не найден или вы не имеете к нему доступа.')
             return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
-        # Проверка срока подачи возврата (14 дней с даты получения)
         if order.order_date < timezone.now() - timedelta(days = 14):
             messages.error(request, 'Срок для подачи запроса на возврат истек.')
             return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
-        # Получение данных из формы
         product_ids = request.POST.getlist('return-products')
         reason = request.POST.get('return-reason')
         details = request.POST.get('return-details', '')
         file = request.FILES.get('return-file')
 
-        # Проверка, что товары принадлежат заказу
         products = CartProduct.objects.filter(id__in = product_ids, cart = order.cart)
         if not products.exists():
             messages.error(request, 'Выбранные товары не относятся к этому заказу.')
             return HttpResponseRedirect(request.META['HTTP_REFERER'])
-        # Создание запроса на возврат
+        
         return_request = ReturnRequest.objects.create(
             customer = customer,
             order = order,

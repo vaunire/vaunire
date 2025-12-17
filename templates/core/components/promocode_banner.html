@@ -76,7 +76,7 @@
         }
      }"
      x-cloak
-     class="fixed right-6 bottom-6 z-50 flex flex-col items-end">
+     class="fixed right-7 bottom-6 z-50 flex flex-col items-end">
 
     <div x-show="state === 'gift'"
          @click="state = 'card'"
@@ -88,7 +88,7 @@
         <!-- Обертка 1: Плавное парение (постоянное) -->
         <div class="animate-float">
             <!-- Обертка 2: Тряска (по таймеру) -->
-            <div class="text-[64px] leading-none drop-shadow-md transition-transform duration-300 hover:scale-110"
+            <div class="text-6xl leading-none drop-shadow-md transition-transform duration-300 hover:scale-110"
                  :class="shaking ? 'animate-shake' : ''">
                 🎁
             </div>
@@ -113,40 +113,44 @@
         x-transition:leave-end="translate-x-[150%] opacity-0"
         class="relative z-40 drop-shadow-2xl">
 
-        <!-- Кнопка закрытия (белая, так как фон синий) -->
+        <!-- Кнопка закрытия  -->
         <button @click="hidePromo(2)" 
                 class="absolute -top-7 right-1.5 z-20 flex items-center gap-2 text-gray-400 hover:text-gray-500 transition-colors cursor-pointer py-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
         <!-- ТЕЛО БИЛЕТА ВАРИАНТ 1 -->
-        <div class="w-[360px] h-[130px] flex relative overflow-hidden rounded-xl bg-blue-600 text-white"
+        <div class="w-[315px] h-[115px] flex relative overflow-hidden rounded-xl bg-blue-600 text-white"
             style="mask: radial-gradient(circle at 0 50%, transparent 10px, black 10.5px) top left / 51% 100% no-repeat,
                         radial-gradient(circle at 100% 50%, transparent 10px, black 10.5px) top right / 51% 100% no-repeat;
                     -webkit-mask: radial-gradient(circle at 0 50%, transparent 10px, black 10.5px) top left / 51% 100% no-repeat,
                                 radial-gradient(circle at 100% 50%, transparent 10px, black 10.5px) top right / 51% 100% no-repeat;">
             
             <!-- Левая часть (Белая) -->
-            <div class="w-[35%] bg-white text-gray-800 flex flex-col justify-center items-center relative z-10 pl-2">
-                <div class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Скидка</div>
+            <div class="w-[36%] bg-white text-gray-800 flex flex-col justify-center items-center relative z-10 pl-2">
+                <div class="text-[11px] text-gray-400/75 -mb-[1px] font-bold tracking-widest uppercase">Скидка</div>
                 <div class="text-4xl font-extrabold text-blue-600">10%</div>
                 <!-- Декор: штрихкод внизу -->
-                <div class="h-3 w-16 mt-3 opacity-30 bg-repeat-x" style="background-image: linear-gradient(to right, #000 30%, transparent 30%, transparent 40%, #000 40%, #000 60%, transparent 60%); background-size: 6px 100%;"></div>
+                <div class="h-3 w-16 mt-1.5 opacity-20"
+                    style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='10' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 0h2v10H0zm4 0h1v10H4zm2 0h3v10H6zm5 0h1v10h-1zm2 0h2v10h-2zm5 0h3v10h-3zm5 0h1v10h-1zm3 0h2v10h-2zm4 0h1v10h-1zm4 0h3v10h-3zm5 0h2v10h-2zm4 0h1v10h-1zm2 0h2v10h-2zm4 0h3v10h-3zm6 0h1v10h-1zm3 0h2v10h-2zm4 0h1v10h-1zm3 0h3v10h-3zm5 0h2v10h-2zm4 0h1v10h-1zm3 0h3v10h-3z'/%3E%3C/svg%3E&quot;); 
+                    background-repeat: no-repeat; 
+                    background-size: cover;">
+                </div>            
             </div>
 
             <!-- Разделитель (Пунктир) -->
-            <div class="absolute left-[35%] top-2 bottom-2 w-px border-r-2 border-dashed border-blue-400/50 z-20"></div>
+            <div class="absolute left-[36%] top-2 bottom-2 w-px border-r-2 border-dashed border-blue-400/50 z-20"></div>
 
             <!-- Правая часть (Синяя) -->
-            <div class="flex-1 flex flex-col justify-center px-9 pl-5 relative z-10">
+            <div class="flex-1 flex flex-col justify-center px-7 pl-5 relative z-10">
                 <div class="flex justify-between items-start">
-                    <div class="text-xs text-blue-200 font-semibold uppercase mb-1.5 tracking-wider">Промокод</div>
+                    <div class="text-xs text-blue-300 font-bold uppercase mb-1.5 tracking-widest">Промокод</div>
                 </div>
                 
                 <div class="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-lg p-1.5 border border-white/20 cursor-pointer hover:bg-white/20 transition-all group/code"
                     @click="copyCode()">
                     
-                    <span class="pl-3 font-mono text-xl font-extrabold tracking-widest text-white drop-shadow-sm">
+                    <span class="pl-1 font-mono text-xl font-extrabold tracking-widest text-white drop-shadow-sm">
                         VAUNIRE
                     </span>
                     

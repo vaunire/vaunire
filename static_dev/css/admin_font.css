@@ -5,6 +5,7 @@ body,
 .prose {
     font-family: 'Montserrat', sans-serif !important;
     letter-spacing: 0.02em;
+    font-weight: 500 !important;
 }
 
 h1,

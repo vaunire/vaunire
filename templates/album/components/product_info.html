@@ -8,7 +8,7 @@
         {{ album.artist.name }}. {{ album.media_type.name }} «{{ album.name }}»{% if album.format_type %}, {{ album.format_type }}{% endif %}
     </h1>
 
-    <!-- Чипы (Minimal Style) -->
+    <!-- Чипы  -->
     <div class="flex flex-wrap gap-2.5 mb-4">
         {% if album.offer_of_the_week %}
             <span class="inline-flex items-center px-2.5 py-[3px] rounded-md text-xs font-semibold bg-white text-orange-600 border shadow-sm border-orange-400 cursor-default transition-colors duration-200 hover:border-orange-500">
@@ -38,7 +38,6 @@
     <div class="flex items-end gap-3 border-b border-gray-100 pb-4">
         {% if promo %}
             <div class="flex flex-col">
-                <!-- Используем аннотированные цены если доступны -->
                 <span class="text-3xl font-semibold text-black">{{ album.annotated_discounted_price|default:album.discounted_price|floatformat:0|intcomma }} ₽</span>
                 <span class="text-base text-gray-300 line-through">{{ album.annotated_current_price|default:album.current_price|floatformat:0|intcomma }} ₽</span>
             </div>

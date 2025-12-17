@@ -1,13 +1,12 @@
 <div class="flex items-center gap-2 opacity-75" id="actions-album-{{ album.id }}">
     
     {% if request.user.is_authenticated %}
-        
         {% if album.stock %}
-
             {% if album.id not in cart_album_ids %}
                 <button hx-get="{% url 'add_to_cart' ct_model=album.ct_model slug=album.slug %}"
                         hx-target="#actions-album-{{ album.id }}"
                         hx-swap="outerHTML"
+                        hx-headers='{"X-Source": "catalog"}'
                         class="p-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-all duration-300" 
                         title="Добавить в корзину">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
@@ -18,6 +17,7 @@
                 <button hx-get="{% url 'remove_from_cart' ct_model=album.ct_model slug=album.slug %}"
                         hx-target="#actions-album-{{ album.id }}"
                         hx-swap="outerHTML"
+                        hx-headers='{"X-Source": "catalog"}'
                         class="p-1.5 bg-gray-100 text-blue-500 rounded-md hover:bg-gray-200 transition-all duration-300" 
                         title="Удалить из корзины">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -27,10 +27,11 @@
             {% endif %}
 
         {% else %}
-            {% if album.id in favorite_album_ids %}
+            {% if album.id in wishlist_album_ids %}
                 <button hx-get="{% url 'remove_from_wishlist' album_id=album.id %}"
                         hx-target="#actions-album-{{ album.id }}"
                         hx-swap="outerHTML"
+                        hx-headers='{"X-Source": "catalog"}'
                         class="p-1.5 bg-gray-100 text-yellow-400 rounded-md hover:bg-gray-200 transition-all duration-300" 
                         title="Удалить из списка ожидания">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 1024 1024">
@@ -41,6 +42,7 @@
                 <button hx-get="{% url 'add_to_wishlist' album_id=album.id %}"
                         hx-target="#actions-album-{{ album.id }}"
                         hx-swap="outerHTML"
+                        hx-headers='{"X-Source": "catalog"}'
                         class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 transition-all duration-300" 
                         title="Добавить в список ожидания">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 1024 1024">
@@ -57,6 +59,7 @@
                         hx-swap="delete"
                     {% else %}
                         hx-target="#actions-album-{{ album.id }}" 
+                        hx-headers='{"X-Source": "catalog"}'
                         hx-swap="outerHTML"
                     {% endif %}
                     class="p-1.5 bg-gray-100 text-red-500 rounded-md hover:bg-gray-200 transition-all duration-300" 
@@ -69,6 +72,7 @@
             <button hx-get="{% url 'add_to_favorite' album_id=album.id %}"
                     hx-target="#actions-album-{{ album.id }}"
                     hx-swap="outerHTML"
+                    hx-headers='{"X-Source": "catalog"}'
                     class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 transition-all duration-300" 
                     title="Добавить в избранное">
                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
@@ -78,10 +82,9 @@
         {% endif %}
 
     {% else %}
-        <a href="{% url 'login' %}" class="p-1.5 bg-gray-100 text-gray-400 rounded-md hover:bg-gray-200 transition-all duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M22.73 22.73L2.77 2.77L2 2l-.73-.73L0 2.54l4.39 4.39l2.21 4.66l-1.35 2.45c-.16.28-.25.61-.25.96c0 1.1.9 2 2 2h7.46l1.38 1.38A1.997 1.997 0 0 0 17 22c.67 0 1.26-.33 1.62-.84L21.46 24zM7.42 15c-.14 0-.25-.11-.25-.25l.03-.12l.9-1.63h2.36l2 2zm8.13-2c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H6.54zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2s-.9-2-2-2"/>
-            </svg>
+        <a href="{% url 'login' %}" 
+        class="flex items-center px-3.5 py-1 rounded-full border border-gray-300 text-gray-600 hover:border-black hover:text-black transition-all duration-300 text-xs font-geologica font-normal">
+            <span>Войти</span>
         </a>
     {% endif %}
 

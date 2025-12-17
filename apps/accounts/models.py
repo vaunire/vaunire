@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-# pre_save — срабатывает перед сохранением объекта (можно изменить/отменить)
-# post_save — срабатывает после успешного сохранения объекта в БД
 from django.db.models.signals import post_save, pre_save
 
 from django.utils import timezone
@@ -39,7 +37,6 @@ class Customer(models.Model):
 
 # ❒ Кастомный менеджер для работы с уведомлениями
 class NotificationManager(models.Manager):
-    # Возвращает базовый QuerySet для модели уведомлений
     def get_queryset(self):
         return super().get_queryset()
 
@@ -77,7 +74,6 @@ class Notifications(models.Model):
 def send_notification(instance, **kwargs):
     """Отправляет уведомления клиентам, которые добавили альбом в лист ожидания, если альбом появился в наличии"""
     if instance.stock and instance.out_of_stock:
-        # Ищем всех клиентов, у которых этот альбом в списке ожидания (wishlist)
         customers = Customer.objects.filter(
             wishlist__in = [instance]
         )

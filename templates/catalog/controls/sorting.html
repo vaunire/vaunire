@@ -1,10 +1,12 @@
 <div class="flex items-center gap-4 tracking-wide flex-shrink-0"
      x-data="{ 
         selected: '{{ sort_label|default:"Сначала новые" }}',
+        
         updateSort(field, value, label) {
             if (field === 'sort') {
                 this.selected = label; 
             }
+
             const input = document.getElementById(field + '_input');
             if(input) {
                 input.value = value;

@@ -1,9 +1,5 @@
 {% load humanize %}
 
-<!-- 
-    Модальное окно: Детали возврата
-    Открывается через событие: open-modal-return-details-{{ return_request.id }}
--->
 <div x-data="{ 
         isOpen: false,
         init() {
@@ -16,8 +12,7 @@
      @open-modal-return-details-{{ return_request.id }}.window="isOpen = true"
      @keydown.escape.window="isOpen = false">
 
-    <!-- Телепорт в body (решает проблемы с z-index и перекрытием) -->
-    <template x-teleport="body">
+     <template x-teleport="body">
         
         <!-- Затемненный фон -->
         <div class="fixed inset-0 bg-gray-800 bg-opacity-60 z-[9999] flex items-center justify-center backdrop-blur-[2px]"
@@ -94,18 +89,21 @@
 
                     <!-- Информационная панель (внизу) -->
                     <div class="mt-6 border border-gray-100 rounded-2xl p-4 bg-white shadow-sm tracking-wide">
-                        <div class="flex flex-col gap-3">
-                            
+                        <div class="flex flex-col cursor-default gap-3">
+    
                             <!-- Ряд 1: Дата и Причина -->
                             <div class="flex flex-wrap gap-2 text-[13px]">
-                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-800 border border-gray-100">
-                                    <svg class="w-[17px] h-[17px] text-gray-400/65" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <!-- Дата -->
+                                <div class="group inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-800 border border-gray-100 hover:shadow transition-all duration-200">
+                                    <svg class="w-[17px] h-[17px] text-gray-400/65 group-hover:text-blue-600 transition-colors duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <rect x="4" y="6" width="16" height="15" rx="2"/><path d="M4 10h16"/><path d="M8 3v3m8-3v3"/>
                                     </svg>
                                     <span class="font-normal">{{ return_request.created_at|date:"d.m.Y" }}</span>
                                 </div>
-                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-800 border border-gray-100">
-                                    <svg class="w-4 h-4 mb-0.5 text-gray-400/80 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                
+                                <!-- Причина -->
+                                <div class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-800 border border-gray-100 hover:shadow transition-all duration-200">
+                                    <svg class="w-4 h-4 mb-0.5 text-gray-400/80 mt-0.5 flex-shrink-0 group-hover:text-blue-600 transition-colors duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                     <span class="font-normal mb-[1px]">{{ return_request.get_reason_display }}</span>
@@ -113,8 +111,8 @@
                             </div>
 
                             <!-- Ряд 2: Комментарий -->
-                            <div class="flex items-start gap-2 p-2.5 rounded-lg border border-dashed border-gray-200 bg-gray-50/50">
-                                <svg class="w-4 h-4 text-gray-400/70 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+                            <div class="group flex items-start gap-2 p-2.5 rounded-lg border border-dashed border-gray-200 bg-gray-50/50 hover:shadow transition-all duration-200">
+                                <svg class="w-4 h-4 text-gray-400/70 flex-shrink-0 group-hover:text-blue-600 transition-colors duration-200" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 0 1-4.255-.95L3 20l1.395-3.72C3.512 15.042 3 13 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                 </svg>
                                 <div class="flex-1 min-w-0">

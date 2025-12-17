@@ -100,30 +100,30 @@
                     </div>
 
                     <!-- Информационная карточка -->
-                    <div class="border border-gray-100 rounded-2xl p-4 bg-white shadow-sm">
+                    <div class="border border-gray-100 rounded-2xl p-4 cursor-default bg-white shadow-sm">
                         <div class="flex flex-col gap-3">
                             
                             <!-- Ряд 1: Чипы -->
                             <div class="flex flex-wrap gap-2 text-[13px]">
                                 <!-- Дата -->
-                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 border border-gray-100">
-                                    <svg class="w-[17px] h-[17px] text-gray-400/65 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <div class="group inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 border border-gray-100 hover:shadow transition-all duration-200">
+                                    <svg class="w-[17px] h-[17px] text-gray-400/65 mb-0.5 group-hover:text-blue-600 transition-colors duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <rect x="4" y="6" width="16" height="15" rx="2"/><path d="M4 10h16"/><path d="M8 3v3m8-3v3"/>
                                     </svg>
                                     <span class="font-normal">{{ order.order_date|date:"d.m.Y" }}</span>
                                 </div>
 
-                                <!-- Время (статика из макета) -->
-                                <div class="inline-flex items-center gap-[7px] px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 border border-gray-100">
-                                    <svg class="w-[15px] h-[15px] mb-[1px] text-gray-400/70" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24">
+                                <!-- Время -->
+                                <div class="group inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 border border-gray-100 hover:shadow transition-all duration-200">
+                                    <svg class="w-[15px] h-[15px] mb-[1px] text-gray-400/70 group-hover:text-blue-600 transition-colors duration-200" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24">
                                         <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3" stroke-linecap="round"/>
                                     </svg>
                                     <span class="font-normal">11:00 - 20:00</span>
                                 </div>
 
                                 <!-- Тип доставки -->
-                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 border border-gray-100">
-                                    <svg class="w-3.5 h-3.5 text-gray-400/75" viewBox="0 0 295.666 295.666" fill="currentColor">
+                                <div class="group inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 border border-gray-100 hover:shadow transition-all duration-200">
+                                    <svg class="w-3.5 h-3.5 text-gray-400/75 group-hover:text-blue-600 transition-colors duration-200" viewBox="0 0 295.666 295.666" fill="currentColor">
                                         <path d="M280.666,8.619H77.373c-8.284,0-15,6.716-15,15v130.549l30-7.25v-108.3h173.293v130.402h-86.799 c11.96,6.343,20.018,17.501,22.805,30h78.994c8.284,0,15-6.716,15-15V23.619C295.666,15.335,288.95,8.619,280.666,8.619z"/>
                                         <path d="M239.224,230.988l-78.964,24.086c-5.955-4.051-51.679-35.162-59-40.143c5.335-2.495,9.928-4.642,16.025-7.493 l34.475,15.059c7.593,3.317,16.434-0.153,19.75-7.742c3.322-7.605-0.169-16.442-7.742-19.75l-46.191-20.177 c-2.936-1.282-6.279-1.619-9.527-0.834c-7.031,1.699-54.178,13.092-60.335,14.58H15c-8.009,0-14.533,6.282-14.959,14.185L0,236.062 v0c0,8.284,6.716,15,15,15h30.232c13.247,5.061,74.616,28.508,83.125,31.759c15.978,5.433,25.478,4.933,35.5,2.376 c2.9-0.74,22.664-6.76,84.118-25.514c7.924-2.417,12.389-10.8,9.972-18.724S247.146,228.574,239.224,230.988z"/>
                                     </svg>
@@ -132,8 +132,8 @@
                             </div>
 
                             <!-- Ряд 2: Адрес -->
-                            <div class="flex items-start gap-2.5 p-3 rounded-lg border border-dashed border-gray-200 bg-gray-50/50">
-                                <svg class="w-4 h-4 text-gray-400/70 mt-0.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <div class="flex items-start group hover:shadow transition-all gap-2.5 p-3 rounded-lg border border-dashed border-gray-200 bg-gray-50/50">
+                                <svg class="w-4 h-4 text-gray-400/70 group-hover:text-blue-600 transition-colors duration-200 mt-0.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
@@ -147,26 +147,24 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="my-3 border-t border-gray-100"></div>
 
-                        <!-- Разделитель -->
-                        <div class="my-3 border-t border-gray-100"></div>
-
-                        <!-- Нижняя часть: Статус и Цена -->
-                        <div class="flex items-center justify-between">
+                    <!-- Нижняя часть: Статус и Цена -->
+                    <div class="flex items-center justify-between">
                             
-                            <!-- Статус -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-[13px] text-gray-600 font-normal">Статус:</span>
-                                    {% include 'profile/components/status_badge.html' with status=order.status text=order.get_status_display %}
-                            </div>
+                    <!-- Статус -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-[13px] text-gray-600 font-normal">Статус:</span>
+                            {% include 'profile/components/status_badge.html' with status=order.status text=order.get_status_display %}
+                    </div>
 
-                            <!-- Цена -->
-                            <div class="text-right">
-                                <p class="text-blue-600 text-xl font-bold">
-                                    {{ order.cart.final_price|floatformat:0|default:'0'|intcomma }} ₽
-                                </p>
-                            </div>
-                        </div>
+                    <!-- Цена -->
+                    <div class="text-right">
+                        <p class="text-blue-600 text-xl font-bold">
+                            {{ order.cart.final_price|floatformat:0|default:'0'|intcomma }} ₽
+                        </p>
                     </div>
                 </div>
             </div>

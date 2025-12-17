@@ -83,7 +83,6 @@ class CartProductInline(TabularInline):
         album = obj.content_object
         now = timezone.now()
         
-        # Ищем самую выгодную активную акцию
         active_promos = album.promotions.filter(
             is_active=True,
             start_date__lte=now,
@@ -92,7 +91,6 @@ class CartProductInline(TabularInline):
 
         if active_promos.exists():
             promo = active_promos.first()
-            # :.0f форматирует как целое число (убирает .00)
             return f"{promo.discount_percentage:.0f}%"
         
         return "0%"

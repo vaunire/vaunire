@@ -46,7 +46,6 @@ def get_visible_styles(album: Album, max_total_width_px: int = 180,) -> List[Sty
             selected.append(style)
             used_width += chip_width + (GAP_BETWEEN_CHIPS if selected else 0)
         else:
-            # Больше не влезет — выходим
             break
 
     return selected

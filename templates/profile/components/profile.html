@@ -29,7 +29,7 @@
             <template x-if="!isEditing">  
                 <button type="button" 
                         @click="isEditing = true" 
-                        class="group flex items-center gap-2 px-4 py-2 bg-white text-gray-600 text-xs font-semibold rounded-full border border-gray-200 shadow-sm hover:border-blue-400 hover:text-blue-600 transition-all duration-300">
+                        class="group flex items-center gap-2 mr-7 px-3.5 py-1.5 bg-white text-gray-600/80 text-xs font-medium rounded-full border border-gray-200 shadow-sm hover:border-blue-400 hover:text-blue-600 transition-all duration-300">
                     <span class="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-blue-500 transition-colors"></span>
                     <span>Редактировать</span>
                 </button>
@@ -39,6 +39,7 @@
         <!-- Форма -->
         <div class="pt-0 font-normal">
             <form method="POST" action="{% url 'update_profile' %}" enctype="multipart/form-data">
+                <div class="hidden disabled:bg-gray-50 disabled:cursor-not-allowed disabled:border-gray-100 bg-white text-gray-900 cursor-text border-gray-200"></div>
                 {% csrf_token %}
 
                 <div class="flex flex-col md:flex-row gap-7">
@@ -88,10 +89,10 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <!-- Имя -->
                                 <div>
-                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                        <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-                                        </svg>
+                                    <label class="flex items-center gap-1.5 mb-1.5 ml-1 text-xs font-semibold text-gray-400/80 uppercase tracking-wider">
+                                        <svg class="text-blue-600 opacity-75" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                            <path d="M7.5 6.5C7.5 8.981 9.519 11 12 11s4.5-2.019 4.5-4.5S14.481 2 12 2S7.5 4.019 7.5 6.5zM20 21h1v-1c0-3.859-3.141-7-7-7h-4c-3.86 0-7 3.141-7 7v1h17z" fill="currentColor"/>
+                                        </svg> 
                                         Имя
                                     </label>
                                     {{ form.first_name }}
@@ -100,10 +101,10 @@
 
                                 <!-- Фамилия -->
                                 <div>
-                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                        <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-                                        </svg>
+                                    <label class="flex items-center gap-1.5 mb-1.5 ml-1 text-xs font-semibold text-gray-400/80 uppercase tracking-wider">
+                                        <svg class="text-blue-600 opacity-75" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                            <path d="M7.5 6.5C7.5 8.981 9.519 11 12 11s4.5-2.019 4.5-4.5S14.481 2 12 2S7.5 4.019 7.5 6.5zM20 21h1v-1c0-3.859-3.141-7-7-7h-4c-3.86 0-7 3.141-7 7v1h17z" fill="currentColor"/>
+                                        </svg> 
                                         Фамилия
                                     </label>
                                     {{ form.last_name }}
@@ -115,7 +116,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <!-- Email -->
                                 <div>
-                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400/80 uppercase tracking-wider">
                                         <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
                                             <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
@@ -128,7 +129,7 @@
 
                                 <!-- Телефон -->
                                 <div>
-                                    <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                    <label class="flex items-center gap-1.5 mb-1.5 ml-1 text-xs font-semibold text-gray-400/80 uppercase tracking-wider">
                                         <svg class="text-blue-600 -mr-0.5 opacity-75" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M20.487 17.14l-4.065-3.696a1.001 1.001 0 0 0-1.391.043l-2.393 2.461c-.576-.11-1.734-.471-2.926-1.66c-1.192-1.193-1.553-2.354-1.66-2.926l2.459-2.394a1 1 0 0 0 .043-1.391L6.859 3.513a1 1 0 0 0-1.391-.087l-2.17 1.861a1 1 0 0 0-.29.649c-.015.25-.301 6.172 4.291 10.766C11.305 20.707 16.323 21 17.705 21c.202 0 .326-.006.359-.008a.992.992 0 0 0 .648-.291l1.86-2.171a.997.997 0 0 0-.085-1.39z" fill="currentColor"/></svg>
                                         Телефон
                                     </label>
@@ -139,7 +140,7 @@
 
                             <!-- Адрес -->
                             <div>
-                                <label class="flex items-center gap-2 mb-1.5 ml-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                <label class="flex items-center gap-1.5 mb-1.5 ml-1.5 text-xs font-semibold text-gray-400/80 uppercase tracking-wider">
                                     <svg class="text-blue-600/80 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                                         <path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                                     </svg>
@@ -158,12 +159,12 @@
                              class="flex items-center justify-end gap-3">
                             
                             <a href="{% url 'account' %}" 
-                               class="px-4 py-2 text-[13px] font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                               class="px-4 py-1.5 text-[13px] font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                                 Отмена
                             </a>
                             
                             <button type="submit" 
-                                    class="px-4 py-2 text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition-colors">
+                                    class="px-4 py-1.5 text-[13px] font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition-colors">
                                 Сохранить
                             </button>
                         </div>

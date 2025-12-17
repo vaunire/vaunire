@@ -9,31 +9,33 @@
     </div>
 
     <!-- Контент -->
-    <div class="p-8 -mt-12 overflow-y-auto flex-1 font-montserrat tracking-wide">
-        <!-- Описание -->
-        <h4 class="text-lg font-semibold text-black mb-2.5">Описание</h4>
-        <div class="mb-8 text-sm leading-7 text-black">
-            {{ album.description|default:"Описание отсутствует"|safe }}
+        <div class="p-8 -mt-12 overflow-y-auto flex-1 font-montserrat tracking-wide">
+            
+            <!-- Описание -->
+            <h4 class="text-lg font-semibold text-black mb-2.5">Описание</h4>
+            <div class="text-sm leading-7 text-black">
+                {{ album.description|default:"Описание отсутствует"|safe }}
+            </div>
+
+            <!-- Треклист -->
+            {% if album.tracklist %}
+            <h4 class="text-lg mt-6 font-semibold text-black mb-2">Треклист</h4>
+            <div class="text-sm leading-7 text-black">
+                {{ album.tracklist|safe }}
+            </div>
+            {% endif %}
+            
+            <!-- Характеристики -->
+            <div class="mt-6">
+                {% include 'album/components/characteristics.html' %}
+            </div>
+
+            <div class="border-gray-100 mt-4">
+                {% include 'album/components/delivery_payment.html' %}
+            </div>
         </div>
 
-        <!-- Треклист -->
-        {% if album.tracklist %}
-        <h4 class="text-lg -mt-10 font-semibold text-black mb-2">Треклист</h4>
-        <div class="text-sm leading-7 text-black">
-            {{ album.tracklist|safe }}
-        </div>
-        {% endif %}
-
-        <div>
-        {% include 'album/components/characteristics.html' %}
-        </div>
-
-        <div class="border-gray-100">
-             {% include 'album/components/delivery_payment.html' %}
-        </div>
-    </div>
-
-    <!-- Футер ( -->
+    <!-- Футер  -->
     <div class="px-8 py-3.5 border-t border-gray-200 bg-white flex-none sticky bottom-0">
     <div class="flex justify-between items-center gap-4"> 
         <div class="flex flex-col">

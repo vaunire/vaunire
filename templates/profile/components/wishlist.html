@@ -15,11 +15,11 @@
         </div>
 
         <!-- Сетка товаров -->
-        <div class="grid grid-cols-1 gap-3">
+        <div class="grid grid-cols-2 gap-3">
             {% for album in customer.wishlist.all %}
                 
                 <!-- Карточка товара -->
-                <div class="flex items-center justify-between bg-white py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+                <div class="flex items-center justify-between bg-white py-3 px-4 rounded-lg shadow-sm hover:shadow-soft-md transition-all duration-300 border border-gray-100">
                     
                     <!-- Левая часть: Изображение и Инфо -->
                     <div class="flex items-center space-x-4">
@@ -34,9 +34,7 @@
                             <a href="{{ album.artist.get_absolute_url }}" class="text-gray-600 font-normal text-[13px] hover:text-blue-600 transition-colors block">
                                 {{ album.artist.name }}
                             </a>
-                            <span class="text-sm font-medium text-black block mt-0.5">
-                                {{ album.current_price|floatformat:0|default:'0'|intcomma }} ₽
-                            </span>
+                       
                         </div>
                     </div>
 
