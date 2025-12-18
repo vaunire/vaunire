@@ -1,6 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from django import views
+from django.views.generic import TemplateView
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.paginator import Paginator
@@ -376,3 +377,12 @@ class AlbumDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
         context['wishlist_album_ids'] = wishlist_album_ids
         
         return context
+    
+class OfferView(TemplateView):
+    template_name = 'core/footer/components/offer.html'
+
+class PrivacyPolicyView(TemplateView):
+    template_name = 'core/footer/components/privacy_policy.html'
+
+class CookiesView(TemplateView):
+    template_name = 'core/footer/components/cookies.html'

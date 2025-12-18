@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Политика конфиденциальности | Vaunire{% endblock %}
+
+{% block content %}
+<main class="flex-grow">
+    <div class="container mx-auto max-w-[1325px] px-4 py-8 pb-32">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            
+            <div class="lg:col-span-1">
+                {% include 'core/footer/controls/sidebar.html' %}
+            </div>
+
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-2xl p-10 shadow-sm border border-gray-100 min-h-[600px]">
+
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Политика обработки персональных данных</h1>
+                    <p class="text-gray-400 text-sm mb-8 pb-4 border-b">Последнее обновление: 18 декабря 2025</p>
+
+                    <div class="space-y-5 text-gray-700 leading-relaxed font-montserrat text-sm md:text-base">
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">1. Введение</h2>
+                            <p>Мы уважаем вашу конфиденциальность. Данная политика описывает, как сайт «Vaunire» (Учебный проект) обрабатывает информацию. Посещая этот сайт, вы соглашаетесь с тем, что вводимые данные используются только для демонстрации работы программного кода и не имеют юридической силы реального договора.</p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">2. Сбор тестовых данных</h2>
+                            <p>В рамках тестирования функционала сайта (формы заказа, регистрации, подписки) мы можем технически обрабатывать следующие данные, которые вы вводите добровольно:</p>
+                            <ul class="list-disc pl-5 mt-2 space-y-2 text-gray-600">
+                                <li class="ml-5">Имя и фамилия (для имитации оформления заказа);</li>
+                                <li class="ml-5">Номер телефона (для проверки работы маски ввода JS);</li>
+                                <li class="ml-5">Адрес электронной почты (для имитации почтовых рассылок Django).</li>
+                            </ul>
+                            <div class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg text-sm border leading-relaxed border-red-100">
+                                <strong>Важно:</strong> Пожалуйста, не вводите реальные паспортные данные, номера действующих кредитных карт, пароли от важных аккаунтов. Используйте вымышленные данные для тестирования.
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">3. Цели обработки</h2>
+                            <p>Единственной целью сбора данных является тестирование backend-части приложения (Django), проверка корректности работы базы данных (PostgreSQL) и валидации форм на стороне сервера.</p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">4. Хранение и передача данных</h2>
+                            <p>Данный сайт является демонстрационным стендом. Мы не передаем данные третьим лицам, не продаем их и не используем для маркетинга. База данных проекта регулярно очищается.</p>
+                        </section>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

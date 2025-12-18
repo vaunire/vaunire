@@ -86,15 +86,14 @@
     <!-- Шапка таблицы -->
     <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-white">
         <div class="flex flex-col">
-            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <span>💿</span> Последние поступления
+            <h2 class="text-lg font-bold text-black flex items-center gap-2">
+                <span class="text-xl">💿</span> Последние поступления
             </h2>
-            <span class="text-xs text-gray-500 mt-1">Отображаются 5 последних добавленных товаров</span>
         </div>
         
         <!-- Группа кнопок действий -->
-        <div class="flex items-center gap-2">
-            <!-- Кнопка ФИЛЬТРОВ (ведет на общий список) -->
+        <div class="flex items-center gap-3">
+            <!-- Кнопка ФИЛЬТРОВ -->
             <a href="{% url 'admin:catalog_album_changelist' %}" 
                title="Все альбомы (Фильтр)"
                class="inline-flex items-center justify-center h-9 w-9 bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md no-underline">
@@ -105,8 +104,8 @@
 
             <!-- Кнопка ДОБАВИТЬ -->
             <a href="{% url 'admin:catalog_album_add' %}" 
-               class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-200 shadow-sm hover:shadow-md no-underline h-9">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+               class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-all duration-200 shadow-sm hover:shadow-md no-underline h-9">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Добавить
@@ -143,19 +142,12 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-sm font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+                                        <span class="text-base font-medium text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">
                                             {{ album.name }}
                                         </span>
-                                        <!-- Медиатип переехал сюда как бейдж -->
-                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200 uppercase">
-                                            {{ album.media_type.name }}
-                                        </span>
                                     </div>
-                                    <span class="text-xs text-gray-500 mt-0.5 font-medium">
+                                    <span class="text-sm text-gray-400 font-normal">
                                         {{ album.artist.name }}
-                                    </span>
-                                    <span class="text-[10px] text-gray-400 mt-0.5">
-                                        ART: {{ album.article }}
                                     </span>
                                 </div>
                             </div>

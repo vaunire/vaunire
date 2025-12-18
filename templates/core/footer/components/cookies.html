@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Использование Cookies | Vaunire{% endblock %}
+
+{% block content %}
+<main class="flex-grow">
+    <div class="container mx-auto max-w-[1325px] px-4 py-8 pb-32">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            
+            <div class="lg:col-span-1">
+                {% include 'core/footer/controls/sidebar.html' %}
+            </div>
+
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-2xl p-10 shadow-sm border border-gray-100 min-h-[600px]">
+
+                    <h1 class="text-3xl font-bold text-gray-900 mb-8 border-b pb-4">Политика использования файлов Cookie</h1>
+
+                    <div class="space-y-6 text-gray-700 leading-relaxed font-montserrat text-sm md:text-base">
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">Что такое Cookies?</h2>
+                            <p>🍪 Файлы cookie – это небольшие текстовые файлы, которые сохраняются на вашем устройстве при посещении сайта. В рамках данного учебного проекта они играют исключительно техническую роль для поддержания сессии пользователя.</p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">Зачем мы их используем?</h2>
+                            <p>На сайте мы используем файлы cookie только для обеспечения базового функционала магазина:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                                    <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                        🛒 Корзина товаров
+                                    </h4>
+                                    <p class="text-sm text-gray-600">
+                                        Используем <code>session.id</code>, чтобы товары, которые вы добавили в корзину, сохранялись при переходе между страницами каталога.
+                                    </p>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                                    <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                        🔒 Безопасность (CSRF)
+                                    </h4>
+                                    <p class="text-sm text-gray-600">
+                                        Используем <code>csrf.token</code> для защиты форм от подделки межсайтовых запросов. Это стандарт безопасности Django.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">Сторонние сервисы</h2>
+                            <p>Мы не используем сторонние рекламные трекеры, пиксели соцсетей (Facebook Pixel, VK Pixel) или сложные аналитические системы (Google Analytics, Yandex Metrica) в данном проекте.</p>
+                        </section>
+                        
+                        <section>
+                            <h2 class="text-lg font-bold text-gray-900 mb-3">Управление файлами cookie</h2>
+                            <p>Вы можете отключить файлы cookie в настройках вашего браузера. Однако, обратите внимание, что в этом случае вы не сможете войти в личный кабинет или добавить товары в корзину, так как эти функции технически зависят от cookies.</p>
+                        </section>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
