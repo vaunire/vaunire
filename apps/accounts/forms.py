@@ -125,17 +125,17 @@ class ProfileEditForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         common_classes = (
-            "w-full px-4 py-2 text-sm rounded-lg border outline-none transition-all duration-200"
+            "w-full px-4 py-2 text-sm rounded-lg border outline-none transition-all duration-200 "
             
             "disabled:opacity-100"
             
             # --- 1. СТИЛЬ РЕДАКТИРОВАНИЯ (БАЗОВЫЙ) ---
-            "bg-white text-gray-900 border-gray-200 cursor-text"
+            "bg-white text-gray-900 border-gray-200 cursor-text "
             
             # --- 2. СТИЛЬ ПРОСМОТРА (ЗАБЛОКИРОВАНО) ---
-            "disabled:bg-gray-50 disabled:border-gray-100 disabled:cursor-not-allowed"
+            "disabled:bg-gray-50 disabled:border-gray-100 disabled:cursor-not-allowed "
             
-            "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
         )
 
         for field_name, field in self.fields.items():

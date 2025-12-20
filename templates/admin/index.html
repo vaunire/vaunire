@@ -1,5 +1,5 @@
 {% extends 'unfold/layouts/base.html' %}
-{% load i18n static unfold %}
+{% load i18n static unfold humanize %}
 
 {% block breadcrumbs %}{% endblock %}
 
@@ -38,331 +38,423 @@
 {% endblock %}
 
 {% block content %}
-    {% component "unfold/components/container.html" %}
-        <div class="dashboard-page relative max-w-8xl mx-auto px-6 py-8 tracking-wide font-montserrat">
-            
-            <!-- Заголовок -->
-            <div class="mb-8 p-6 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-sm">
-                <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-                    <span class="text-2xl">📊</span>
-                    Панель управления
-                </h1>
-                <p class="text-gray-500 text-sm mt-1 font-normal">Статистика за последние 14 дней • Обновлено сегодня</p>
-            </div>
-
-            <!-- Сетка для графиков -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <!-- График регистраций -->
-                <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-sm p-6 hover:shadow-md transition-all duration-300">
-                    <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100">
-                        <h2 class="text-lg font-bold text-black flex items-center gap-2">
-                            <span class="text-xl">📈</span>
-                            Новые пользователи
-                        </h2>
-                        <span class="text-3xl font-bold text-blue-600" id="totalRegistrations">0</span>
-                    </div>
-                    <div class="relative h-56 w-full">
-                        <canvas id="registrationsChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- График заказов -->
-                <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-sm p-6 hover:shadow-md transition-all duration-300">
-                    <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100">
-                        <h2 class="text-lg font-bold text-black flex items-center gap-2">
-                            <span class="text-xl">🛒</span>
-                            Заказы
-                        </h2>
-                        <span class="text-3xl font-bold text-green-600" id="totalOrders">0</span>
-                    </div>
-                    <div class="relative h-56 w-full">
-                        <canvas id="ordersChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Таблица последних альбомов -->
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-    <!-- Шапка таблицы -->
-    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-white">
-        <div class="flex flex-col">
-            <h2 class="text-lg font-bold text-black flex items-center gap-2">
-                <span class="text-xl">💿</span> Последние поступления
-            </h2>
+{% component "unfold/components/container.html" %}
+<div class="dashboard-page relative max-w-8xl mx-auto py-2 tracking-wide font-montserrat">
+    
+    <!-- Заголовок и Приветствие -->
+    <div class="mb-6 p-6 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+                <span class="text-2xl">📊</span>
+                Панель управления
+            </h1>
+            <p class="text-gray-500 text-sm mt-1 font-normal">Статистика за последние 14 дней</p>
         </div>
         
-        <!-- Группа кнопок действий -->
-        <div class="flex items-center gap-3">
-            <!-- Кнопка ФИЛЬТРОВ -->
-            <a href="{% url 'admin:catalog_album_changelist' %}" 
-               title="Все альбомы (Фильтр)"
-               class="inline-flex items-center justify-center h-9 w-9 bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md no-underline">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-            </a>
-
-            <!-- Кнопка ДОБАВИТЬ -->
-            <a href="{% url 'admin:catalog_album_add' %}" 
-               class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-all duration-200 shadow-sm hover:shadow-md no-underline h-9">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Добавить
-            </a>
+        <!-- Приветствие пользователя -->
+        <div class="hidden md:flex flex-col items-end">
+            <span class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-0.5">Администратор</span>
+            <div class="flex items-center gap-2 text-lg font-bold text-gray-800">
+                Добрый день, 
+                <span class="text-blue-600">{{ request.user.first_name|default:request.user.username }}</span>
+                <span class="text-2xl animate-wave origin-bottom-right inline-block hover:rotate-12 transition-transform">👋</span>
+            </div>
         </div>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-semibold">
-                    <th class="px-6 py-4 w-[40%]">Альбом</th>
-                    <th class="px-6 py-4 w-[20%] text-right">Цена</th>
-                    <th class="px-6 py-4 w-[20%] text-right">Статус</th>
-                    <th class="px-6 py-4 w-[10%] text-center">Действие</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                {% for album in latest_albums %}
-                    <tr class="group hover:bg-gray-50 transition-colors duration-200">
-                        <!-- Колонка: Обложка + Название + Артист -->
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-4">
-                                <div class="relative h-12 w-12 flex-shrink-0">
-                                    {% if album.image %}
-                                        <img class="h-12 w-12 rounded-lg object-cover shadow-sm border border-gray-200 group-hover:scale-105 transition-transform duration-200" 
-                                             src="{{ album.image.url }}" 
-                                             alt="{{ album.name }}">
-                                    {% else %}
-                                        <div class="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200">
-                                            💿
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-base font-medium text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">
-                                            {{ album.name }}
-                                        </span>
-                                    </div>
-                                    <span class="text-sm text-gray-400 font-normal">
-                                        {{ album.artist.name }}
+    <!-- Верхняя сетка графиков -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- График регистраций -->
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900 tracking-wider flex items-center gap-2">
+                    <span class="text-2xl">📈</span> Новые пользователи
+                </h2>
+                <span class="text-2xl font-bold text-gray-900" id="totalRegistrations">0</span>
+            </div>
+            <div class="relative h-48 w-full">
+                <canvas id="registrationsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- График заказов -->
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900 tracking-wider flex items-center gap-2">
+                    <span class="text-2xl">🛒</span> Заказы
+                </h2>
+                <span class="text-2xl font-bold text-gray-900" id="totalOrders">0</span>
+            </div>
+            <div class="relative h-48 w-full">
+                <canvas id="ordersChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- НИЖНЯЯ СЕКЦИЯ -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        
+        <!-- ЛЕВАЯ КОЛОНКА: Выручка -->
+        <div class="xl:col-span-1">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-0 overflow-hidden flex flex-col h-full">
+                <div class="p-6 pb-2">
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="text-2xl">💰</span>
+                        <h2 class="text-xl font-bold text-gray-900 tracking-wider flex items-center gap-2">
+                            Финансовый отчет
+                        </h2>
+                    </div>
+                    
+                    <div class="mt-4 flex items-baseline gap-2">
+                        <span class="text-4xl font-montserrat font-bold text-gray-900">
+                            {{ total_period_revenue|floatformat:0|intcomma }} ₽
+                        </span>
+                    </div>
+                    <p class="text-gray-400 text-sm font-normal mt-1">Сумма оплаченных заказов за последние 2 недели</p>
+                </div>
+
+                <div class="relative w-full flex-grow min-h-[180px] px-8 pb-2">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: Таблица альбомов -->
+        <div class="xl:col-span-2 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <!-- Шапка таблицы -->
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-white">
+                <h2 class="text-xl font-bold text-gray-900 tracking-wider flex items-center gap-2">
+                    <span class="text-xl">💿</span> Новинки каталога
+                </h2>
+                
+                <div class="flex items-center gap-2.5">
+                    <a href="{% url 'admin:catalog_album_changelist' %}" title="Весь каталог"
+                       class="h-9 w-9 flex items-center justify-center bg-white text-gray-400/60 hover:text-blue-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-lg transition-all shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    
+                    <a href="{% url 'admin:catalog_album_add' %}" 
+                       class="h-9 px-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wide rounded-lg transition-all shadow-sm hover:shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Добавить
+                    </a>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 border-b border-gray-100 text-[11px] uppercase tracking-wider text-gray-500 font-bold">
+                            <th class="pl-7 py-4 w-[6%] whitespace-nowrap text-left">ID</th>
+                            <th class="px-4 py-4 w-[50%]">Альбом</th>
+                            <th class="px-4 py-4 w-[0%] pl-10 text-left whitespace-nowrap">Цена</th>
+                            <th class="px-4 py-4 w-[18%] text-center whitespace-nowrap">Продано (шт.)</th>
+                            <th class="px-4 py-4 w-[24%] text-left whitespace-nowrap">Наличие</th>
+                            <th class="pr-6 py-4 w-[5%] text-right"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm">
+                        {% for album in latest_albums %}
+                            <tr class="group hover:bg-gray-50 transition-colors duration-200">
+                                
+                                <!-- ID -->
+                                <td class="pl-6 py-4 align-middle whitespace-nowrap">
+                                    <span class="text-xs font-medium text-gray-900 -ml-1 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
+                                        {{ album.id }}
                                     </span>
-                                </div>
-                            </div>
-                        </td>
+                                </td>
 
-                        <!-- Колонка: Цена + Кнопка редактирования -->
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
-                            <div class="flex items-center justify-end gap-3 group/price">
-                                <div class="flex flex-col items-end">
-                                    {% if album.annotated_discounted_price %}
-                                        <span class="text-sm font-bold text-gray-900">
-                                            {{ album.annotated_discounted_price|floatformat:0 }} ₽
-                                        </span>
-                                        {% if album.annotated_discount_percentage > 0 %}
-                                            <span class="text-[10px] text-red-500 line-through">
-                                                {{ album.annotated_current_price|floatformat:0 }} ₽
+                                <!-- Альбом -->
+                                <td class="px-4 py-4 align-middle">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative h-10 w-10 flex-shrink-0">
+                                            {% if album.image %}
+                                                <img class="h-10 w-10 rounded-lg object-cover shadow-sm border border-gray-200" src="{{ album.image.url }}" alt="">
+                                            {% else %}
+                                                <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200">💿</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex flex-col overflow-hidden max-w-[250px]">
+                                            <span class="font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors" title="{{ album.name }}">
+                                                {{ album.name }}
                                             </span>
+                                            <span class="text-[13px] text-gray-500 font-normal truncate" title="{{ album.artist.name }}">{{ album.artist.name }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Цена  -->
+                                <td class="px-4 py-4 pl-10 align-middle text-left whitespace-nowrap tabular-nums">
+                                    <div class="flex items-center justify-start gap-2">
+                                        <div class="flex flex-col items-start">
+                                            {% if album.annotated_discounted_price %}
+                                                <span class="font-semibold text-gray-900">{{ album.annotated_discounted_price|floatformat:0|intcomma }} ₽</span>
+                                            {% else %}
+                                                <span class="text-[10px] text-gray-400 italic">Не задана</span>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if album.pricelist_item_id %}
+                                            <a href="{% url 'admin:catalog_pricelistitem_change' album.pricelist_item_id %}" 
+                                               title="Изменить цену"
+                                               class="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-1.5 rounded-md transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </a>
+                                        {% elif active_pricelist_id %}
+                                            <a href="{% url 'admin:catalog_pricelistitem_add' %}?price_list={{ active_pricelist_id }}&album={{ album.id }}" 
+                                               title="Добавить цену"
+                                               class="text-green-500 hover:text-green-700 hover:bg-green-50 p-1.5 rounded-md transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </a>
                                         {% endif %}
-                                    {% else %}
-                                        <span class="text-xs text-gray-400 font-medium">Не указана</span>
-                                    {% endif %}
-                                </div>
+                                    </div>
+                                </td>
 
-                                <!-- Кнопка редактирования цены -->
-                                {% if album.pricelist_item_id %}
-                                    <a href="{% url 'admin:catalog_pricelistitem_change' album.pricelist_item_id %}" 
-                                       title="Редактировать цену"
-                                       class="p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                <!-- Продано -->
+                                <td class="px-4 py-4 align-middle text-center whitespace-nowrap">
+                                    <span class="text-xs font-medium text-gray-900 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
+                                        {{ album.total_sold }}
+                                    </span>
+                                </td>
+
+                                <!-- Наличие -->
+                                <td class="px-4 py-4 align-middle text-left whitespace-nowrap">
+                                    <div class="flex items-center justify-start gap-2">
+                                        {% if album.out_of_stock or album.stock == 0 %}
+                                            <span class="relative flex h-1.5 w-1.5">
+                                              <span class="animate-pulse absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                                            </span>
+                                            <span class="text-xs font-medium text-gray-500">Нет в наличии</span>
+                                        {% else %}
+                                            <span class="relative flex h-1.5 w-1.5">
+                                              <span class="animate-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                                            </span>
+                                            <span class="text-xs font-medium text-gray-500">В наличии</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+
+                                <!-- Действие -->
+                                <td class="pr-6 py-4 align-middle text-right whitespace-nowrap">
+                                    <a href="{% url 'admin:catalog_album_change' album.id %}" 
+                                       class="inline-block text-gray-400 hover:text-gray-900 transition-colors"
+                                       title="Перейти к альбому">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                                         </svg>
                                     </a>
-                                {% elif active_pricelist_id %}
-                                    <a href="{% url 'admin:catalog_pricelistitem_add' %}?price_list={{ active_pricelist_id }}&album={{ album.id }}" 
-                                       title="Установить цену"
-                                       class="p-1.5 rounded-md text-gray-300 hover:text-green-600 hover:bg-green-50 transition-all opacity-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </td>
-
-                        <!-- Колонка: Статус -->
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
-                            {% if album.out_of_stock or album.stock == 0 %}
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-100">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                    Нет
-                                </span>
-                            {% elif album.stock < 3 %}
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                                    Мало: {{ album.stock }}
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    {{ album.stock }} шт.
-                                </span>
-                            {% endif %}
-                        </td>
-
-                        <!-- Колонка: Ссылка (Редактировать альбом) -->
-                        <td class="px-6 py-4 text-center">
-                            <a href="{% url 'admin:catalog_album_change' album.id %}" 
-                               class="text-gray-400 hover:text-blue-600 transition-colors p-2 inline-block" 
-                               title="Редактировать альбом">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="4" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center text-3xl mb-3">
-                                    💿
-                                </div>
-                                <h3 class="text-gray-900 font-medium text-sm">Нет альбомов</h3>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="py-8 text-center text-gray-400 text-xs">Каталог пуст</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+             <!-- Футер таблицы -->
+            <div class="bg-gray-50/80 px-5 py-2 border-t border-gray-200 flex justify-center">
+                <a href="{% url 'admin:catalog_album_changelist' %}" class="text-[11px] font-bold text-gray-400 hover:text-blue-600 transition-colors uppercase tracking-widest flex items-center gap-1">
+                    Показать все
+                </a>
+            </div>
+        </div>
     </div>
-    
-    <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex justify-center">
-        <a href="{% url 'admin:catalog_album_changelist' %}" class="text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-wide flex items-center gap-1">
-            Смотреть весь каталог
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-        </a>
-    </div>
+
 </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-        
-        <script>
-            Chart.defaults.font.family = "'Montserrat', sans-serif";
-            Chart.defaults.font.weight = '500';
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+<script>
+    Chart.defaults.font.family = "'Montserrat', sans-serif";
+    Chart.defaults.font.weight = '500';
 
-            function formatDates(labels) {
-                return labels.map(label => {
-                    const [day, month] = label.split('.');
-                    const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-                    return `${parseInt(day)} ${months[parseInt(month) - 1]}`;
-                });
-            }
-
-            function sumValues(arr) {
-                return arr.reduce((a, b) => a + b, 0);
-            }
-
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(29, 29, 31, 0.95)',
-                        titleFont: { size: 13, weight: '700' },
-                        bodyFont: { size: 12, weight: '500' },
-                        padding: 16,
-                        cornerRadius: 14,
-                        displayColors: false,
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
-                        borderWidth: 1,
-                        callbacks: {
-                            title: function(items) {
-                                return '📅 ' + items[0].label;
-                            }
+    function getChartOptions(unitName, smooth) {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { left: 0, right: 0, top: 20, bottom: 0 }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)', 
+                    titleColor: '#fff', 
+                    bodyColor: '#fff',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    titleFont: { size: 13, weight: 'bold' },
+                    bodyFont: { size: 12 },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(tooltipItems) { return tooltipItems[0].label; },
+                        label: function(context) { 
+                            return context.parsed.y.toLocaleString('ru-RU') + ' ' + unitName; 
                         }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0, 0, 0, 0.04)', drawBorder: false },
-                        border: { display: false },
-                        ticks: { color: '#86868b', font: { size: 11, weight: '500' }, padding: 12, stepSize: 1 }
-                    },
-                    x: {
-                        grid: { display: false },
-                        border: { display: false },
-                        ticks: { color: '#86868b', font: { size: 11, weight: '500' }, maxRotation: 0, autoSkipPadding: 20 }
-                    }
-                },
-                interaction: { intersect: false, mode: 'index' },
-                elements: {
-                    point: { radius: 4, hoverRadius: 8, hoverBorderWidth: 3, hoverBackgroundColor: '#fff', borderWidth: 2 },
-                    line: { borderWidth: 3, tension: 0.4 }
                 }
-            };
-
-            // График регистраций
-            const ctxReg = document.getElementById('registrationsChart').getContext('2d');
-            const gradientBlue = ctxReg.createLinearGradient(0, 0, 0, 220);
-            gradientBlue.addColorStop(0, 'rgba(0, 122, 255, 0.25)');
-            gradientBlue.addColorStop(0.5, 'rgba(0, 122, 255, 0.08)');
-            gradientBlue.addColorStop(1, 'rgba(0, 122, 255, 0)');
-
-            const regData = {{ registration_data|safe }};
-            document.getElementById('totalRegistrations').textContent = sumValues(regData.counts);
-
-            new Chart(ctxReg, {
-                type: 'line',
-                data: {
-                    labels: formatDates(regData.labels),
-                    datasets: [{
-                        label: 'Регистрации',
-                        data: regData.counts,
-                        borderColor: '#007aff',
-                        backgroundColor: gradientBlue,
-                        fill: true,
-                        pointBackgroundColor: '#007aff',
-                        pointBorderColor: '#fff',
-                        pointHoverBorderColor: '#007aff'
-                    }]
+            },
+            scales: {
+                x: { 
+                    display: true, 
+                    grid: { display: false },
+                    ticks: {
+                        color: '#9ca3af',
+                        font: { size: 10 },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 6
+                    },
+                    border: { display: false }
+                }, 
+                y: { 
+                    display: true, 
+                    beginAtZero: true,
+                    ticks: {
+                        display: true,
+                        color: '#d1d5db',
+                        font: { size: 10 },
+                        maxTicksLimit: 5,
+                        padding: 10,
+                        precision: 0 
+                    },
+                    grid: { 
+                        display: true,
+                        color: '#f3f4f6', 
+                        borderDash: [5, 5],
+                        drawBorder: false
+                    },
+                    border: { display: false }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 2.5, 
+                    hitRadius: 20,    
+                    hoverRadius: 5,
+                    borderWidth: 2, 
+                    borderColor: '#fff' 
                 },
-                options: chartOptions
-            });
+                line: {
+                    borderWidth: 3,
+                    tension: smooth ? 0.4 : 0 
+                }
+            }
+        };
+    }
 
-            // График заказов
-            const ctxOrd = document.getElementById('ordersChart').getContext('2d');
-            const gradientGreen = ctxOrd.createLinearGradient(0, 0, 0, 220);
-            gradientGreen.addColorStop(0, 'rgba(52, 199, 89, 0.25)');
-            gradientGreen.addColorStop(0.5, 'rgba(52, 199, 89, 0.08)');
-            gradientGreen.addColorStop(1, 'rgba(52, 199, 89, 0)');
+    // 1. График Регистраций
+    const ctxReg = document.getElementById('registrationsChart').getContext('2d');
+    const regData = {{ registration_data|safe }};
+    document.getElementById('totalRegistrations').textContent = regData.counts.reduce((a, b) => a + b, 0);
 
-            const ordData = {{ order_data|safe }};
-            document.getElementById('totalOrders').textContent = sumValues(ordData.counts);
+    new Chart(ctxReg, {
+        type: 'line',
+        data: {
+            labels: regData.labels,
+            datasets: [{
+                label: 'Пользователи',
+                data: regData.counts,
+                borderColor: '#2563eb', 
+                backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                pointBackgroundColor: '#2563eb',
+                fill: true,
+            }]
+        },
+        options: getChartOptions('чел.', true)
+    });
 
-            new Chart(ctxOrd, {
-                type: 'line',
-                data: {
-                    labels: formatDates(ordData.labels),
-                    datasets: [{
-                        label: 'Заказы',
-                        data: ordData.counts,
-                        borderColor: '#34c759',
-                        backgroundColor: gradientGreen,
-                        fill: true,
-                        pointBackgroundColor: '#34c759',
-                        pointBorderColor: '#fff',
-                        pointHoverBorderColor: '#34c759'
-                    }]
+    // 2. График Заказов
+    const ctxOrd = document.getElementById('ordersChart').getContext('2d');
+    const ordData = {{ order_data|safe }};
+    document.getElementById('totalOrders').textContent = ordData.counts.reduce((a, b) => a + b, 0);
+
+    new Chart(ctxOrd, {
+        type: 'line',
+        data: {
+            labels: ordData.labels,
+            datasets: [{
+                label: 'Заказы',
+                data: ordData.counts,
+                borderColor: '#16a34a',
+                backgroundColor: 'rgba(22, 163, 74, 0.05)',
+                pointBackgroundColor: '#16a34a',
+                fill: true,
+            }]
+        },
+        options: getChartOptions('зак.', true)
+    });
+
+    // 3. График Выручки
+    const ctxRev = document.getElementById('revenueChart').getContext('2d');
+    const revData = {{ revenue_data|safe }};
+
+    new Chart(ctxRev, {
+        type: 'bar',
+        data: {
+            labels: revData.labels,
+            datasets: [{
+                data: revData.counts,
+                backgroundColor: '#3b82f6', 
+                borderRadius: 3,
+                barThickness: 'flex',
+                maxBarThickness: 35, 
+                categoryPercentage: 0.85,
+                barPercentage: 0.9,
+                hoverBackgroundColor: '#2563eb'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: 0 },
+            plugins: {
+                legend: { display: false },
+                // ИЗМЕНЕНИЕ: Увеличен padding в подсказке
+                tooltip: {
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)', 
+                    titleColor: '#fff', 
+                    bodyColor: '#fff',
+                    padding: 12, // Было 5, стало 12
+                    cornerRadius: 4,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y.toLocaleString('ru-RU') + ' ₽';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { 
+                    display: true, 
+                    grid: { display: false, drawBorder: false },
+                    ticks: { 
+                        font: { size: 9 },
+                        color: '#9ca3af',
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 5
+                    },
+                    border: { display: false }
                 },
-                options: chartOptions
-            });
-        </script>
-    {% endcomponent %}
+                y: { display: false }
+            }
+        }
+    });
+</script>
+{% endcomponent %}
 {% endblock %}

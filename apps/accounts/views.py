@@ -12,7 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache 
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import Count, Prefetch, Sum, OuterRef, Subquery
+from django.db.models import Count, Prefetch, Sum, OuterRef, Subquery, F, Q
 from django.db.models.functions import TruncDate
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -494,18 +494,21 @@ class ClearNotificationsView(views.View):
 
 
 # ==========================================
-# БЛОК 4: DASHBOARD (Redis Caching)
+# БЛОК 4: DASHBOARD
 # ==========================================
 
 def dashboard_callback(request, context):
-    cache_key = 'unfold_dashboard_stats_v3' # v3 - чтобы сбросить старый кэш
+    cache_key = 'unfold_dashboard_stats_v5_final' # Обновляем ключ для сброса кэша
     stats_data = cache.get(cache_key)
+
+    # Если нужно принудительно сбросить кэш для проверки - раскомментируй:
+    # stats_data = None 
 
     if not stats_data:
         end_date = timezone.now().date()
         start_date = end_date - timedelta(days=13) 
 
-        # --- Графики (без изменений) ---
+        # 1. Регистрации
         registrations = (
             User.objects.filter(date_joined__date__range=[start_date, end_date])
             .annotate(day=TruncDate('date_joined')).values('day')
@@ -513,6 +516,7 @@ def dashboard_callback(request, context):
         )
         reg_dict = {item['day']: item['count'] for item in registrations}
 
+        # 2. Заказы (Количество)
         orders = (
             Order.objects.filter(created_at__date__range=[start_date, end_date])
             .annotate(day=TruncDate('created_at')).values('day')
@@ -520,29 +524,42 @@ def dashboard_callback(request, context):
         )
         order_dict = {item['day']: item['count'] for item in orders}
 
-        registration_labels = []
+        # 3. Выручка (Деньги)
+        revenue = (
+            # Фильтруем завершенные заказы за период
+            Order.objects.filter(created_at__date__range=[start_date, end_date], status='completed')
+            
+            # Группируем по дням
+            .annotate(day=TruncDate('created_at')).values('day')
+            
+            # ИСПРАВЛЕНИЕ: обращаемся к cart, а затем к final_price
+            .annotate(total=Sum('cart__final_price')).order_by('day')
+        )
+        # Если total вернет None (нет заказов), подставляем 0
+        revenue_dict = {item['day']: item['total'] or 0 for item in revenue}
+
+        labels = []
         registration_counts = []
-        order_labels = []
         order_counts = []
+        revenue_sums = []
 
         current_date = start_date
         while current_date <= end_date:
             label = current_date.strftime('%d.%m')
-            registration_labels.append(label)
+            labels.append(label)
             registration_counts.append(reg_dict.get(current_date, 0))
-            order_labels.append(label)
             order_counts.append(order_dict.get(current_date, 0))
+            revenue_sums.append(float(revenue_dict.get(current_date, 0)))
             current_date += timedelta(days=1)
 
-        reg_data_json = json.dumps({"labels": registration_labels, "counts": registration_counts})
-        order_data_json = json.dumps({"labels": order_labels, "counts": order_counts})
+        reg_data_json = json.dumps({"labels": labels, "counts": registration_counts})
+        order_data_json = json.dumps({"labels": labels, "counts": order_counts})
+        revenue_data_json = json.dumps({"labels": labels, "counts": revenue_sums})
 
-        # --- Таблица альбомов (ОБНОВЛЕНО) ---
+        # Альбомы и цены
         active_pricelist = get_cached_pricelist()
-
         latest_albums_qs = Album.objects.select_related('artist', 'media_type').order_by('-id')[:5]
 
-        # 1. ДОБАВЛЯЕМ ID ЦЕНЫ: чтобы кнопка "Редактировать" знала, куда вести
         if active_pricelist:
             latest_albums_qs = latest_albums_qs.annotate(
                 pricelist_item_id=Subquery(
@@ -553,14 +570,18 @@ def dashboard_callback(request, context):
                 )
             )
 
-        # 2. Аннотируем сами цены
         latest_albums = list(annotate_prices(latest_albums_qs, active_pricelist))
+        
+        # Общая выручка за период
+        total_period_revenue = sum(revenue_sums)
 
         stats_data = {
             "registration_data": reg_data_json,
             "order_data": order_data_json,
+            "revenue_data": revenue_data_json,
+            "total_period_revenue": total_period_revenue,
             "latest_albums": latest_albums,
-            "active_pricelist_id": active_pricelist.id if active_pricelist else None # Передаем ID прайса
+            "active_pricelist_id": active_pricelist.id if active_pricelist else None
         }
         
         cache.set(cache_key, stats_data, 600)

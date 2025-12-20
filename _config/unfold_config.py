@@ -19,6 +19,7 @@ UNFOLD = {
         """
     ),
     "SITE_HEADER": " ",
+    "SHOW_BACK_BUTTON": True,
     "SITE_ICON": lambda request: static("images/logo/logo_admin.png"),
     "SITE_FAVICONS": [
         {
@@ -31,6 +32,7 @@ UNFOLD = {
     "STYLES": [
         lambda request: static("css/admin_font.css"),
     ],
+    "THEME": "light",
     "SIDEBAR": {
         "show_search": True,
         "show_all_applications": True,
