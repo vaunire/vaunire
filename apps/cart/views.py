@@ -1,83 +1,19 @@
 from django import views
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
-from django.db.models import Prefetch
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
 from apps.accounts.mixins import NotificationsMixin
 from apps.accounts.models import Customer
-from apps.catalog.models import Album, PriceList, Style
-from apps.catalog.views import annotate_prices
+from apps.catalog.utils import optimize_cart_products
 from apps.orders.forms import OrderForm
 from apps.promotions.models import PromoCode
 
 from .mixins import CartMixin
-from .models import Cart, CartProduct
-
-
-# ==========================================
-# БЛОК 1: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# ==========================================
-
-def get_cached_pricelist():
-    """ Получает активный прайс-лист """
-    return cache.get_or_set(
-        'active_pricelist',
-        lambda: PriceList.objects.filter(is_active=True).first(),
-        3600
-    )
-
-def prefetch_albums_for_products(products_list):
-    """ Загружает альбомы с ценами """
-    if not products_list:
-        return
-
-    album_ct = ContentType.objects.get_for_model(Album)
-    
-    # Сбор ID без запросов
-    album_ids = {
-        p.object_id for p in products_list 
-        if p.content_type_id == album_ct.id
-    }
-            
-    if not album_ids:
-        return
-
-    active_pricelist = get_cached_pricelist()
-    
-    optimized_albums_qs = Album.objects.filter(id__in=album_ids)
-    optimized_albums_qs = annotate_prices(optimized_albums_qs, active_pricelist)
-    optimized_albums_qs = optimized_albums_qs.select_related('artist', 'genre')
-    optimized_albums_qs = optimized_albums_qs.prefetch_related(
-        'image_gallery',
-        Prefetch('styles', queryset=Style.objects.select_related('genre'))
-    )
-
-    albums_map = optimized_albums_qs.in_bulk()
-
-    # Подмена объектов в памяти
-    for product in products_list:
-        if product.content_type_id == album_ct.id and product.object_id in albums_map:
-            product.content_object = albums_map[product.object_id]
-
-
-def optimize_cart_products(cart):
-    """Применяет оптимизацию к объекту корзины"""
-    if not cart:
-        return
-    
-    # Вычисляем QS в список с подгрузкой ContentType
-    products = list(cart.products.select_related('content_type').all())
-    prefetch_albums_for_products(products)
-    
-    # Кладем обратно в кэш префетча Django
-    cart.products._result_cache = products
-    cart.products._prefetch_done = True
+from .models import CartProduct
 
 
 # ==========================================

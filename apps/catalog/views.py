@@ -3,71 +3,19 @@ from decimal import Decimal, InvalidOperation
 from django import views
 from django.views.generic import TemplateView
 from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.db.models import (Case, DecimalField, F, Max, Min, OuterRef,
-                              Prefetch, Q, Subquery, Value, When)
-from django.db.models.functions import Coalesce
+from django.db.models import Max, Min, Prefetch, Q
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.utils import timezone
 
 from apps.accounts.mixins import NotificationsMixin
 from apps.cart.mixins import CartMixin
 from apps.cart.models import CartProduct
-from apps.promotions.models import Promotion
 
-from .models import (Album, Artist, Genre, PriceList, PriceListItem,
-                     PromoGroup, Style)
-from .utils import get_visible_styles
+from .models import Album, Artist, Genre, PromoGroup, Style
+from .utils import get_active_pricelist, annotate_prices, get_visible_styles
 
-
-# ==========================================
-# БЛОК 1: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# ==========================================
-
-def get_cached_pricelist():
-    """Получает активный прайс-лист """
-    return cache.get_or_set(
-        'active_pricelist',
-        lambda: PriceList.objects.filter(is_active=True).first(),
-        3600
-    )
-
-def annotate_prices(queryset, active_pricelist):
-    """Аннотирует QuerySet ценами и скидками """
-    if not active_pricelist:
-        return queryset.annotate(
-            annotated_current_price=Value(0, output_field=DecimalField()),
-            annotated_discounted_price=Value(0, output_field=DecimalField()),
-            annotated_discount_percentage=Value(0, output_field=DecimalField())
-        )
-    
-    price_subquery = PriceListItem.objects.filter(
-        album_id=OuterRef('pk'),
-        price_list=active_pricelist
-    ).values('price')[:1]
-
-    discount_subquery = Promotion.objects.filter(
-        albums=OuterRef('pk'),
-        is_active=True,
-        start_date__lte=timezone.now(),
-        end_date__gte=timezone.now()
-    ).order_by('-discount_percentage').values('discount_percentage')[:1] 
-
-    return queryset.annotate(
-        annotated_current_price=Coalesce(
-            Subquery(price_subquery, output_field=DecimalField()), 
-            Value(0, output_field=DecimalField())
-        ),
-        annotated_discount_percentage=Subquery(discount_subquery, output_field=DecimalField()),
-        annotated_discounted_price=Case(
-            When(annotated_discount_percentage__isnull=False,
-                 then=F('annotated_current_price') * (1 - F('annotated_discount_percentage') / 100.0)),
-            default=F('annotated_current_price'),
-            output_field=DecimalField()
-        )
-    )
 
 def search_view(request):
     query = request.GET.get('q', '').strip()
@@ -106,19 +54,19 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
             return default
 
     def get(self, request, *args, **kwargs):
-        active_pricelist = get_cached_pricelist()
+        active_pricelist = get_active_pricelist()
         
+        # Получаем базовый QS с ценами
         qs = annotate_prices(Album.objects.all(), active_pricelist)
 
-        global_stats = cache.get('album_global_stats')
-        if global_stats is None:
-            global_stats = qs.aggregate(
-                min_price=Min('annotated_discounted_price'),
-                max_price=Max('annotated_discounted_price'),
-                min_year=Min('release_date__year'),
-                max_year=Max('release_date__year')
-            )
-            cache.set('album_global_stats', global_stats, 3600)
+        # Агрегация статистики (без кэша, для упрощения и актуальности)
+        # Если нужна производительность, можно вернуть cache.get_or_set сюда
+        global_stats = qs.aggregate(
+            min_price=Min('annotated_discounted_price'),
+            max_price=Max('annotated_discounted_price'),
+            min_year=Min('release_date__year'),
+            max_year=Max('release_date__year')
+        )
         
         defaults = {
             'min_price': int(global_stats['min_price'] or 0),
@@ -179,6 +127,7 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
             'image_gallery',
         )
 
+        # Вычисляем стили для отображения
         for album in page_obj:
             album.visible_styles = get_visible_styles(album)
             all_styles_len = len(album.styles.all())
@@ -239,8 +188,9 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
              except PromoGroup.DoesNotExist:
                  pass
 
-        genres = cache.get_or_set('all_genres', lambda: list(Genre.objects.all()), 3600)
-        styles = cache.get_or_set('all_styles', lambda: list(Style.objects.select_related('genre').all()), 3600)
+        # Используем обычные запросы вместо кэша для жанров и стилей
+        genres = list(Genre.objects.all())
+        styles = list(Style.objects.select_related('genre').all())
 
         context = {
             'page_obj': page_obj,
@@ -294,8 +244,8 @@ class AlbumDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
             Prefetch('styles', queryset=Style.objects.select_related('genre')),
             'image_gallery'
         )
-        active_pricelist = get_cached_pricelist()
-        qs = annotate_prices(qs, active_pricelist)
+        # Аннотируем цены
+        qs = annotate_prices(qs)
         return qs
 
     def get_context_data(self, **kwargs):
@@ -318,15 +268,14 @@ class AlbumDetailView(CartMixin, views.generic.DetailView, NotificationsMixin):
                     .select_related('artist', 'genre', 'media_type')\
                     .prefetch_related('image_gallery', 'styles__genre')
                 
-                active_pricelist = get_cached_pricelist()
-                recently_rec_qs = annotate_prices(recently_rec_qs, active_pricelist)
+                # Используем хелпер для цен, без явного получения pricelist
+                recently_rec_qs = annotate_prices(recently_rec_qs)
 
                 recently_viewed_albums = list(recently_rec_qs)
                 recently_viewed_albums.sort(key=lambda x: ids_to_fetch.index(x.id))
 
                 for r_album in recently_viewed_albums:
                      r_album.visible_styles = get_visible_styles(r_album)
-                     # len() вместо count()
                      r_album.remaining_styles_count = max(0, r_album.styles.count() - len(r_album.visible_styles))
         
         context['recently_viewed_albums'] = recently_viewed_albums

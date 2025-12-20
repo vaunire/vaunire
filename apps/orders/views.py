@@ -4,10 +4,8 @@ import stripe
 from django import views
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F, Prefetch
+from django.db.models import F
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -17,73 +15,13 @@ from django.views.decorators.csrf import csrf_exempt
 
 from apps.accounts.models import Customer
 from apps.cart.mixins import CartMixin
-from apps.cart.models import Cart, CartProduct
-from apps.catalog.models import Album, PriceList, Style
-from apps.catalog.views import annotate_prices
+from apps.cart.models import CartProduct
+from apps.catalog.utils import prefetch_albums_for_products, optimize_cart_products
 from apps.orders.forms import OrderForm
 from apps.orders.models import Order, Payment, ReturnRequest
 
 # Настройка Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
-
-
-# ==========================================
-# БЛОК 1: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# ==========================================
-
-def get_cached_pricelist():
-    """Получает активный прайс-лист из кэша"""
-    return cache.get_or_set(
-        'active_pricelist',
-        lambda: PriceList.objects.filter(is_active=True).first(),
-        3600
-    )
-
-def prefetch_albums_for_products(products_list):
-    """ Загружает альбомы """
-    if not products_list:
-        return
-
-    album_ct = ContentType.objects.get_for_model(Album)
-    
-    # Сбор ID без лишних запросов
-    album_ids = {
-        p.object_id for p in products_list 
-        if p.content_type_id == album_ct.id
-    }
-            
-    if not album_ids:
-        return
-
-    active_pricelist = get_cached_pricelist()
-    
-    optimized_albums_qs = Album.objects.filter(id__in=album_ids)
-    optimized_albums_qs = annotate_prices(optimized_albums_qs, active_pricelist)
-    optimized_albums_qs = optimized_albums_qs.select_related('artist', 'genre')
-    optimized_albums_qs = optimized_albums_qs.prefetch_related(
-        'image_gallery',
-        Prefetch('styles', queryset=Style.objects.select_related('genre'))
-    )
-
-    albums_map = optimized_albums_qs.in_bulk()
-
-    # Подмена объектов в памяти
-    for product in products_list:
-        if product.content_type_id == album_ct.id and product.object_id in albums_map:
-            product.content_object = albums_map[product.object_id]
-
-def optimize_cart_products(cart):
-    """Применяет оптимизацию к объекту корзины."""
-    if not cart:
-        return
-    
-    # Загружаем продукты с ContentType
-    products = list(cart.products.select_related('content_type').all())
-    prefetch_albums_for_products(products)
-    
-    # Обновляем кэш префетча
-    cart.products._result_cache = products
-    cart.products._prefetch_done = True
 
 
 # ==========================================
