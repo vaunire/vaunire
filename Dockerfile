@@ -31,9 +31,9 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # --- ЗАВИСИМОСТИ NODE.JS ---
 # Копируем ТОЛЬКО файлы описания зависимостей фронтенда
 # Это позволяет Docker закэшировать папку node_modules
-COPY tailwind_config/static_src/package.json tailwind_config/static_src/package-lock.json* /app/tailwind_config/static_src/
+COPY _tailwind/static_src/package.json _tailwind/static_src/package-lock.json* /app/_tailwind/static_src/
 
-WORKDIR /app/tailwind_config/static_src
+WORKDIR /app/_tailwind/static_src
 RUN npm install
 # Даем права на исполнение бинарных файлов
 RUN chmod +x node_modules/.bin/*

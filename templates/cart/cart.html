@@ -31,7 +31,7 @@
     {{ block.super }} 
     
     <!-- 1. API Яндекс Карт -->
-    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_maps_api_key }}&lang=ru_RU" type="text/javascript"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_maps_api_key }}&lang=ru_RU&ns=ymaps&load=package.full" type="text/javascript"></script>
     
     <!-- 2. Наш отдельный файл с логикой -->
     <script src="{% static 'js/map.js' %}"></script>

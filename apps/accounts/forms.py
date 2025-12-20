@@ -138,9 +138,17 @@ class ProfileEditForm(forms.ModelForm):
             "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
         )
 
+        placeholders = {
+            'first_name': 'Иван',
+            'last_name': 'Иванов',
+            'email': 'example@gmail.com',
+            'phone': '+7 (999) 000-00-00',
+            'address': 'г. Северодвинск, ул. Ломоносова, д. 1'
+        }
+
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = common_classes
-            field.widget.attrs['placeholder'] = field.label
+            field.widget.attrs['placeholder'] = placeholders.get(field_name, field.label)
 
         if self.customer:
             self.fields['phone'].initial = self.customer.phone

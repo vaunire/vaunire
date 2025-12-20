@@ -8,8 +8,8 @@ services:
     volumes:
       - .:/app
       - static_volume:/app/static
-      - media_volume:/app/media
-      - /app/tailwind_config/static_src/node_modules
+      - ./media:/app/media
+      - /app/_tailwind/static_src/node_modules
     expose:
       - 8000
     env_file:
@@ -20,6 +20,8 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
+      - REDIS_LOCATION=redis://redis:6379/1
+      - NPM_BIN_PATH=/usr/bin/npm
 
   db:
     image: postgres:16
@@ -48,10 +50,10 @@ services:
       - db
 
   nginx:
-    build: ./nginx
+    build: ./_nginx
     volumes:
       - static_volume:/app/static
-      - media_volume:/app/media
+      - ./media:/app/media
     ports:
       - "80:80"
     depends_on:

@@ -6,8 +6,8 @@ from django import views
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache 
 from django.core.paginator import Paginator
@@ -23,62 +23,27 @@ from django.utils.decorators import method_decorator
 from apps.cart.mixins import CartMixin
 from apps.cart.models import CartProduct
 from apps.catalog.models import Album, PriceList, Style, PriceListItem
-from apps.catalog.utils import get_visible_styles
-from apps.catalog.views import annotate_prices
+from apps.catalog.utils import (
+    get_visible_styles, 
+    get_active_pricelist, 
+    annotate_prices, 
+    prefetch_albums_for_products, 
+    optimize_cart_products
+)
 from apps.orders.models import Order, ReturnRequest
-
 from .forms import LoginForm, ProfileEditForm, RegistrationForm
 from .mixins import NotificationsMixin
 from .models import Customer, Notifications
 
 
 # ==========================================
-# БЛОК 1: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ОПТИМИЗАЦИИ
+# БЛОК 1: ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # ==========================================
-
-def get_cached_pricelist():
-    return cache.get_or_set(
-        'active_pricelist',
-        lambda: PriceList.objects.filter(is_active=True).first(),
-        3600 
-    )
-
-def prefetch_albums_for_products(products_list):
-    """Функция оптимизации загрузки альбомов в корзине"""
-    if not products_list:
-        return
-
-    album_ct = ContentType.objects.get_for_model(Album)
-    
-    album_ids = set()
-    for product in products_list:
-        if product.content_type_id == album_ct.id:
-            album_ids.add(product.object_id)
-            
-    if not album_ids:
-        return
-
-    active_pricelist = get_cached_pricelist()
-    
-    optimized_albums_qs = Album.objects.filter(id__in=album_ids)
-    optimized_albums_qs = annotate_prices(optimized_albums_qs, active_pricelist)
-    optimized_albums_qs = optimized_albums_qs.select_related('artist', 'genre')
-    optimized_albums_qs = optimized_albums_qs.prefetch_related(
-        'image_gallery',
-        Prefetch('styles', queryset=Style.objects.select_related('genre'))
-    )
-
-    albums_map = optimized_albums_qs.in_bulk()
-
-    for product in products_list:
-        if product.content_type_id == album_ct.id and product.object_id in albums_map:
-            product.content_object = albums_map[product.object_id]
-
 
 def get_optimized_customer(user):
     """Получает профиль покупателя с предзагруженным Wishlist и Favorite"""
     try:
-        active_pricelist = get_cached_pricelist()
+        active_pricelist = get_active_pricelist()
         
         # Базовый QS для списков (сразу с ценами и связями)
         base_album_qs = annotate_prices(Album.objects.all(), active_pricelist)
@@ -152,11 +117,7 @@ class AccountView(CartMixin, NotificationsMixin, views.View):
         customer = get_optimized_customer(request.user)
         orders_with_status = get_optimized_orders_context(customer)
         
-        if self.cart:
-            current_cart_products = list(self.cart.products.select_related('content_type').all())
-            prefetch_albums_for_products(current_cart_products)
-            self.cart.products._result_cache = current_cart_products
-            self.cart.products._prefetch_done = True
+        optimize_cart_products(self.cart)
 
         last_paid_order = None
         if customer:
@@ -175,6 +136,7 @@ class AccountView(CartMixin, NotificationsMixin, views.View):
         total_spent = 0
         next_discount_threshold = 15000 
         current_discount = 0 
+        next_discount_percent = 3 # FIX: Default next level discount
         
         if customer:
             cache_key = f'user_spent_{request.user.id}'
@@ -294,11 +256,7 @@ class UpdateProfileView(CartMixin, NotificationsMixin, views.View):
         form = ProfileEditForm(instance = request.user, customer = customer)
         orders_with_status = get_optimized_orders_context(customer)
         
-        if self.cart:
-            current_cart_products = list(self.cart.products.select_related('content_type').all())
-            prefetch_albums_for_products(current_cart_products)
-            self.cart.products._result_cache = current_cart_products
-            self.cart.products._prefetch_done = True
+        optimize_cart_products(self.cart)
 
         return render(request, 'profile/profile.html', {
             'form': form,
@@ -359,7 +317,7 @@ class FavoritesView(CartMixin, NotificationsMixin, views.View):
             Prefetch('styles', queryset=Style.objects.select_related('genre'))
         )
 
-        active_pricelist = get_cached_pricelist()
+        active_pricelist = get_active_pricelist()
         albums_qs = annotate_prices(albums_qs, active_pricelist)
         
         filters = {
@@ -557,7 +515,7 @@ def dashboard_callback(request, context):
         revenue_data_json = json.dumps({"labels": labels, "counts": revenue_sums})
 
         # Альбомы и цены
-        active_pricelist = get_cached_pricelist()
+        active_pricelist = get_active_pricelist()
         latest_albums_qs = Album.objects.select_related('artist', 'media_type').order_by('-id')[:5]
 
         if active_pricelist:
